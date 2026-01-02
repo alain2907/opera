@@ -280,7 +280,16 @@ export default function ImportEcrituresPWA() {
 
               {/* Format attendu */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-blue-800 mb-2">📋 Format CSV attendu :</h3>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-blue-800">📋 Format CSV attendu :</h3>
+                  <a
+                    href="/modele-import-ecritures.csv"
+                    download
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  >
+                    ⬇️ Télécharger le modèle
+                  </a>
+                </div>
                 <div className="text-sm text-gray-700 space-y-1">
                   <p><strong>Colonnes :</strong> date, journal, pieceRef, compteNumero, libelle, debit, credit</p>
                   <p><strong>Date :</strong> JJ/MM/AAAA (ex: 01/05/2025)</p>
