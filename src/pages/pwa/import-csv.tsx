@@ -679,6 +679,7 @@ export default function ImportCSVPWA() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <input
                             type="text"
+                            list={`comptes-datalist-${line.id}`}
                             value={line.compte || ''}
                             onChange={(e) =>
                               handleCompteChange(line.id, e.target.value)
@@ -686,6 +687,21 @@ export default function ImportCSVPWA() {
                             className="w-32 px-2 py-1 border border-gray-300 rounded text-sm font-mono"
                             placeholder="Ex: 606100"
                           />
+                          <datalist id={`comptes-datalist-${line.id}`}>
+                            {comptes
+                              .filter(c =>
+                                !line.compte ||
+                                c.numero.includes(line.compte) ||
+                                c.nom?.toLowerCase().includes(line.compte.toLowerCase())
+                              )
+                              .slice(0, 50)
+                              .map(c => (
+                                <option key={c.numero} value={c.numero}>
+                                  {c.numero} - {c.nom}
+                                </option>
+                              ))
+                            }
+                          </datalist>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <input
