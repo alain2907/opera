@@ -39,6 +39,7 @@ interface Ecriture {
 }
 
 interface Compte {
+  numero?: string;
   numero_compte?: string;
   numeroCompte?: string;
   nom?: string;
@@ -192,7 +193,7 @@ export default function BalanceComptablePWA() {
 
       // Initialiser tous les comptes du plan comptable
       allComptes.forEach((compte: Compte) => {
-        const numeroCompte = compte.numeroCompte || compte.numero_compte || '';
+        const numeroCompte = compte.numero || compte.numeroCompte || compte.numero_compte || '';
         const nomCompte = compte.nom || compte.libelle || '';
 
         // Filtrer par classe si spécifié
