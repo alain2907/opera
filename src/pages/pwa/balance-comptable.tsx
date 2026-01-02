@@ -193,7 +193,7 @@ export default function BalanceComptablePWA() {
       // Initialiser tous les comptes du plan comptable
       allComptes.forEach((compte: Compte) => {
         const numeroCompte = compte.numeroCompte || compte.numero_compte || '';
-        const libelle = compte.libelle || compte.nom || '';
+        const nomCompte = compte.nom || compte.libelle || '';
 
         // Filtrer par classe si spécifié
         if (classesSelectionnees.length > 0) {
@@ -207,7 +207,7 @@ export default function BalanceComptablePWA() {
 
         comptesMap.set(numeroCompte, {
           numero_compte: numeroCompte,
-          nom_compte: libelle,
+          nom_compte: nomCompte,
           total_debit: 0,
           total_credit: 0,
           solde_debiteur: 0,
