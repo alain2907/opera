@@ -134,7 +134,14 @@ export default function ImportEcrituresPWA() {
           let totalDebit = 0;
           let totalCredit = 0;
 
-          lignesGroupe.forEach(ligne => {
+          // Filtrer les lignes vides (debit=0 ET credit=0)
+          const lignesNonVides = lignesGroupe.filter(ligne => {
+            const debit = parseFloat(ligne.debit) || 0;
+            const credit = parseFloat(ligne.credit) || 0;
+            return !(debit === 0 && credit === 0);
+          });
+
+          lignesNonVides.forEach(ligne => {
             const debit = parseFloat(ligne.debit) || 0;
             const credit = parseFloat(ligne.credit) || 0;
             totalDebit += debit;
@@ -157,7 +164,7 @@ export default function ImportEcrituresPWA() {
             totalDebit,
             totalCredit,
             equilibree,
-            lignes: lignesGroupe,
+            lignes: lignesNonVides, // Stocker uniquement les lignes non vides
           });
         });
 
@@ -192,6 +199,14 @@ export default function ImportEcrituresPWA() {
 
       for (const ecriture of ecritures) {
         for (const ligne of ecriture.lignes) {
+          const debit = parseFloat(ligne.debit) || 0;
+          const credit = parseFloat(ligne.credit) || 0;
+
+          // Ignorer silencieusement les lignes vides (debit=0 ET credit=0)
+          if (debit === 0 && credit === 0) {
+            continue;
+          }
+
           // Parser la date JJ/MM/AAAA → AAAA-MM-JJ
           const [jour, mois, annee] = ligne.date.split('/');
           const dateISO = `${annee}-${mois}-${jour}`;
@@ -203,8 +218,8 @@ export default function ImportEcrituresPWA() {
             pieceRef: ligne.pieceRef,
             compteNumero: ligne.compteNumero,
             libelle: ligne.libelle,
-            debit: parseFloat(ligne.debit) || 0,
-            credit: parseFloat(ligne.credit) || 0,
+            debit,
+            credit,
           };
 
           try {
