@@ -112,6 +112,9 @@ export default function ImportCSVPWA() {
     const lines = text.split('\n').filter((line) => line.trim());
     const dataLines = lines.slice(1); // Skip header
 
+    console.log('🔍 Parsing CSV avec libelleCompteMap:', libelleCompteMap);
+    console.log('📊 Nombre de mappings:', Object.keys(libelleCompteMap).length);
+
     const parsed: CSVLine[] = dataLines
       .map((line, index) => {
         const parts = line.split(';');
@@ -132,6 +135,9 @@ export default function ImportCSVPWA() {
 
         // Pré-remplir compte si déjà enregistré
         const comptePredefini = findCompteForLibelle(libelle);
+        if (comptePredefini) {
+          console.log(`✅ Compte trouvé pour "${libelle}": ${comptePredefini}`);
+        }
 
         return {
           id: `line-${index}-${Date.now()}`,
