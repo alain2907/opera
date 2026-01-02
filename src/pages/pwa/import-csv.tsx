@@ -253,6 +253,18 @@ export default function ImportCSVPWA() {
       return;
     }
 
+    // Confirmation de mise en garde
+    const confirmation = confirm(
+      `⚠️ ATTENTION ⚠️\n\n` +
+      `Vous allez importer ${csvLines.filter(l => !l.isBalanceLine).length} ligne(s) dans l'exercice.\n\n` +
+      `Cette action va créer des écritures comptables.\n\n` +
+      `Voulez-vous continuer ?`
+    );
+
+    if (!confirmation) {
+      return;
+    }
+
     setImporting(true);
 
     try {
