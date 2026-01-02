@@ -10,6 +10,7 @@ import {
   getAllExercices,
   getAllComptes,
   createEcriture,
+  updateEcriture,
   createCompte,
   getEcrituresByExercice,
   getAllEcritures,
@@ -50,6 +51,7 @@ export default function SaisiePWA() {
     { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
     { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
   ]);
+  const [lignesOriginales, setLignesOriginales] = useState<any[]>([]);
 
   const [suggestions, setSuggestions] = useState<Record<number, Array<{ code: string; libelle: string }>>>({});
   const [showSuggestions, setShowSuggestions] = useState<Record<number, boolean>>({});
@@ -254,7 +256,7 @@ export default function SaisiePWA() {
           // Synchroniser le mois de saisie avec la date de l'écriture
           setSaisieMonth(dateEcritureFormatee.slice(0, 7));
 
-          // 4. Convertir toutes les lignes
+          // 4. Convertir toutes les lignes ET stocker les lignes originales avec leurs IDs
           const lignesChargees = ecrituresGroupe.map((e: any) => ({
             numero_compte: e.compteNumero || e.compte_numero || '',
             libelle_compte: e.libelle || '',
@@ -263,6 +265,7 @@ export default function SaisiePWA() {
           }));
 
           setLignes(lignesChargees);
+          setLignesOriginales(ecrituresGroupe); // Garder les lignes originales avec leurs IDs
 
           // 5. Stocker l'ID de la première ligne pour l'édition
           setEditingEcriture({ id: premiere.id, ...formDataUpdated, lignes: lignesChargees });
@@ -466,51 +469,63 @@ export default function SaisiePWA() {
           throw new Error('Au moins 2 lignes sont requises');
         }
 
-        // 1. Charger la ligne de référence pour obtenir piece_ref et date
-        const ligneRef = await getEcriture(editingEcriture.id);
-        if (!ligneRef) {
-          throw new Error('Écriture introuvable');
-        }
-
-        const pieceRef = ligneRef.pieceRef || ligneRef.piece_ref;
-        const date = ligneRef.date;
-
-        // 2. Charger toutes les anciennes lignes de l'écriture
-        const toutesEcritures = await getAllEcritures();
-        const anciennesLignes = toutesEcritures.filter((e: any) => {
-          const ref = e.pieceRef || e.piece_ref;
-          return ref === pieceRef && e.date === date;
-        });
-
-        // 3. Supprimer toutes les anciennes lignes
-        console.log('🗑️ Suppression de', anciennesLignes.length, 'anciennes lignes');
-        for (const ligne of anciennesLignes) {
-          await deleteEcriture(ligne.id);
-        }
-
-        // 4. Recréer l'écriture avec les nouvelles lignes
         const journal = journaux.find(j => j.id === formData.journal_id);
         const journalCode = journal?.code || 'OD';
 
-        console.log('✨ Création de', lignesValides.length, 'nouvelles lignes');
-        for (const ligne of lignesValides) {
+        console.log('📝 Mise à jour intelligente de l\'écriture');
+        console.log('  Lignes originales:', lignesOriginales.length);
+        console.log('  Lignes actuelles:', lignesValides.length);
+
+        let nbUpdated = 0;
+        let nbCreated = 0;
+        let nbDeleted = 0;
+
+        // 1. Mettre à jour ou créer les lignes actuelles
+        for (let i = 0; i < lignesValides.length; i++) {
+          const ligneActuelle = lignesValides[i];
+          const ligneOriginale = lignesOriginales[i]; // Correspondance par index
+
           const ligneData = {
             exerciceId: formData.exercice_id,
             date: formData.date_ecriture,
             journal: journalCode,
             pieceRef: formData.numero_piece,
-            compteNumero: ligne.numero_compte,
-            libelle: ligne.libelle_compte,
-            debit: Number(ligne.debit),
-            credit: Number(ligne.credit),
+            compteNumero: ligneActuelle.numero_compte,
+            libelle: ligneActuelle.libelle_compte,
+            debit: Number(ligneActuelle.debit),
+            credit: Number(ligneActuelle.credit),
           };
-          console.log('  → Création ligne:', ligneData);
-          await createEcriture(ligneData);
-        }
-        console.log('✅ Toutes les lignes créées avec succès');
 
-        setSuccess(`Écriture mise à jour (${anciennesLignes.length} ligne(s) supprimée(s), ${lignesValides.length} ligne(s) créée(s))`);
+          if (ligneOriginale && ligneOriginale.id) {
+            // Mettre à jour la ligne existante
+            console.log(`  ✏️ Mise à jour ligne #${ligneOriginale.id}`);
+            await updateEcriture(ligneOriginale.id, ligneData);
+            nbUpdated++;
+          } else {
+            // Créer une nouvelle ligne
+            console.log('  ➕ Création nouvelle ligne');
+            await createEcriture(ligneData);
+            nbCreated++;
+          }
+        }
+
+        // 2. Supprimer les lignes en trop (si l'utilisateur a supprimé des lignes)
+        if (lignesOriginales.length > lignesValides.length) {
+          for (let i = lignesValides.length; i < lignesOriginales.length; i++) {
+            const ligneASupprimer = lignesOriginales[i];
+            if (ligneASupprimer && ligneASupprimer.id) {
+              console.log(`  🗑️ Suppression ligne #${ligneASupprimer.id}`);
+              await deleteEcriture(ligneASupprimer.id);
+              nbDeleted++;
+            }
+          }
+        }
+
+        console.log(`✅ Mise à jour terminée: ${nbUpdated} modifiée(s), ${nbCreated} créée(s), ${nbDeleted} supprimée(s)`);
+
+        setSuccess(`Écriture mise à jour: ${nbUpdated} modifiée(s), ${nbCreated} créée(s), ${nbDeleted} supprimée(s)`);
         setEditingEcriture(null);
+        setLignesOriginales([]);
 
         // Retourner à la page précédente après la mise à jour
         setTimeout(() => {
