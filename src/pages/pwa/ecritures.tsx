@@ -239,14 +239,18 @@ export default function SaisiePWA() {
           const premiere = ecrituresGroupe[0];
           const journalId = premiere.journalId || premiere.journal_id;
           const exerciceId = premiere.exerciceId || premiere.exercice_id;
+          const dateEcritureFormatee = dateFromLigne.split('T')[0];
 
           setFormData({
             journal_id: journalId || 1,
             exercice_id: exerciceId || selectedExerciceId || 1,
-            date_ecriture: dateFromLigne.split('T')[0],
+            date_ecriture: dateEcritureFormatee,
             numero_piece: pieceRefFromLigne,
             libelle: premiere.libelle || '',
           });
+
+          // Synchroniser le mois de saisie avec la date de l'écriture
+          setSaisieMonth(dateEcritureFormatee.slice(0, 7));
 
           // 4. Convertir toutes les lignes
           const lignesChargees = ecrituresGroupe.map((e: any) => ({
@@ -1088,7 +1092,8 @@ export default function SaisiePWA() {
               <select
                 value={formData.journal_id}
                 onChange={(e) => setFormData({ ...formData, journal_id: Number(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                disabled={!!editingEcriture}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 {journaux.length === 0 ? (
                   <option value="">Aucun journal disponible</option>
@@ -1109,7 +1114,8 @@ export default function SaisiePWA() {
                 type="month"
                 value={saisieMonth}
                 onChange={(e) => setSaisieMonth(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                disabled={!!editingEcriture}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -1152,7 +1158,8 @@ export default function SaisiePWA() {
                           type="date"
                           value={formData.date_ecriture}
                           onChange={(e) => setFormData({ ...formData, date_ecriture: e.target.value })}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                          disabled={!!editingEcriture}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                         />
                       </td>
                       <td className="p-1 relative">
