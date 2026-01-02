@@ -967,6 +967,7 @@ export default function BalanceComptablePWA() {
                     📝 Détail de l'écriture
                   </h2>
                   <p className="text-sm text-green-100">
+                    ID: #{ecritureDetaillee.id || 'N/A'} |
                     Date: {new Date(ecritureDetaillee.date).toLocaleDateString('fr-FR')} |
                     N° Pièce: {ecritureDetaillee.pieceRef || ecritureDetaillee.piece_ref || 'N/A'}
                   </p>

@@ -14,6 +14,7 @@ import {
   createCompte,
   getEcrituresByExercice,
   getAllEcritures,
+  getEcriture,
 } from '../../lib/storageAdapter';
 
 // Hardcoded journals list for PWA
@@ -203,58 +204,119 @@ export default function SaisiePWA() {
     }
   }, [selectedExerciceId]);
 
-  // Charger l'écriture depuis le paramètre URL ?piece=XXX
+  // Charger l'écriture depuis le paramètre URL ?id=XXX ou ?piece=XXX
   useEffect(() => {
     const loadEcritureFromUrl = async () => {
+      const ligneId = router.query.id as string;
       const pieceRef = router.query.piece as string;
-      if (!pieceRef) return;
 
-      try {
-        const toutesEcritures = await getAllEcritures();
-        const ecrituresGroupe = toutesEcritures.filter((e: any) => {
-          const ref = e.pieceRef || e.piece_ref;
-          return ref === pieceRef;
-        });
+      // Priorité à l'ID (méthode moderne) - charger la ligne puis toutes les lignes de la même écriture
+      if (ligneId) {
+        try {
+          // 1. Charger la ligne de référence
+          const ligneRef = await getEcriture(Number(ligneId));
+          if (!ligneRef) {
+            setError(`Ligne #${ligneId} introuvable`);
+            return;
+          }
 
-        if (ecrituresGroupe.length === 0) {
-          setError(`Aucune écriture trouvée avec la référence ${pieceRef}`);
-          return;
+          const pieceRefFromLigne = ligneRef.pieceRef || ligneRef.piece_ref;
+          const dateFromLigne = ligneRef.date;
+
+          // 2. Charger toutes les lignes de la même écriture (même piece_ref ET même date)
+          const toutesEcritures = await getAllEcritures();
+          const ecrituresGroupe = toutesEcritures.filter((e: any) => {
+            const ref = e.pieceRef || e.piece_ref;
+            return ref === pieceRefFromLigne && e.date === dateFromLigne;
+          });
+
+          if (ecrituresGroupe.length === 0) {
+            setError(`Écriture complète introuvable`);
+            return;
+          }
+
+          // 3. Préparer le formulaire avec les données de la première ligne
+          const premiere = ecrituresGroupe[0];
+          const journalId = premiere.journalId || premiere.journal_id;
+          const exerciceId = premiere.exerciceId || premiere.exercice_id;
+
+          setFormData({
+            journal_id: journalId || 1,
+            exercice_id: exerciceId || selectedExerciceId || 1,
+            date_ecriture: dateFromLigne.split('T')[0],
+            numero_piece: pieceRefFromLigne,
+            libelle: premiere.libelle || '',
+          });
+
+          // 4. Convertir toutes les lignes
+          const lignesChargees = ecrituresGroupe.map((e: any) => ({
+            numero_compte: e.compteNumero || e.compte_numero || '',
+            libelle_compte: e.libelle || '',
+            debit: Number(e.debit || 0),
+            credit: Number(e.credit || 0),
+          }));
+
+          setLignes(lignesChargees);
+
+          // 5. Stocker l'ID de la première ligne pour l'édition
+          setEditingEcriture({ id: premiere.id, ...formData, lignes: lignesChargees });
+          setSuccess(`Écriture #${pieceRefFromLigne} chargée pour modification`);
+        } catch (err) {
+          console.error('Erreur chargement écriture par ID:', err);
+          setError('Impossible de charger l\'écriture');
         }
+        return;
+      }
 
-        // Prendre la première écriture pour les infos communes
-        const premiere = ecrituresGroupe[0];
-        const journalId = premiere.journalId || premiere.journal_id;
-        const exerciceId = premiere.exerciceId || premiere.exercice_id;
-        const date = premiere.date;
+      // Fallback: charger par pieceRef (ancienne méthode)
+      if (pieceRef) {
+        try {
+          const toutesEcritures = await getAllEcritures();
+          const ecrituresGroupe = toutesEcritures.filter((e: any) => {
+            const ref = e.pieceRef || e.piece_ref;
+            return ref === pieceRef;
+          });
 
-        setFormData({
-          journal_id: journalId || 1,
-          exercice_id: exerciceId || selectedExerciceId || 1,
-          date_ecriture: date.split('T')[0],
-          numero_piece: pieceRef,
-          libelle: premiere.libelle || '',
-        });
+          if (ecrituresGroupe.length === 0) {
+            setError(`Aucune écriture trouvée avec la référence ${pieceRef}`);
+            return;
+          }
 
-        // Convertir toutes les écritures en lignes
-        const lignesChargees = ecrituresGroupe.map((e: any) => ({
-          numero_compte: e.compteNumero || e.compte_numero || '',
-          libelle_compte: e.libelle || '',
-          debit: Number(e.debit || 0),
-          credit: Number(e.credit || 0),
-        }));
+          // Prendre la première écriture pour les infos communes
+          const premiere = ecrituresGroupe[0];
+          const journalId = premiere.journalId || premiere.journal_id;
+          const exerciceId = premiere.exerciceId || premiere.exercice_id;
+          const date = premiere.date;
 
-        setLignes(lignesChargees);
-        setSuccess(`Écriture ${pieceRef} chargée pour modification`);
-      } catch (err) {
-        console.error('Erreur chargement écriture:', err);
-        setError('Impossible de charger l\'écriture');
+          setFormData({
+            journal_id: journalId || 1,
+            exercice_id: exerciceId || selectedExerciceId || 1,
+            date_ecriture: date.split('T')[0],
+            numero_piece: pieceRef,
+            libelle: premiere.libelle || '',
+          });
+
+          // Convertir toutes les écritures en lignes
+          const lignesChargees = ecrituresGroupe.map((e: any) => ({
+            numero_compte: e.compteNumero || e.compte_numero || '',
+            libelle_compte: e.libelle || '',
+            debit: Number(e.debit || 0),
+            credit: Number(e.credit || 0),
+          }));
+
+          setLignes(lignesChargees);
+          setSuccess(`Écriture ${pieceRef} chargée pour modification`);
+        } catch (err) {
+          console.error('Erreur chargement écriture par piece:', err);
+          setError('Impossible de charger l\'écriture');
+        }
       }
     };
 
     if (router.isReady) {
       loadEcritureFromUrl();
     }
-  }, [router.isReady, router.query.piece]);
+  }, [router.isReady, router.query.id, router.query.piece]);
 
   // Pré-remplir le formulaire quand on édite une écriture
   useEffect(() => {
