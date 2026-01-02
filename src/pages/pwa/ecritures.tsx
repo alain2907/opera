@@ -489,18 +489,20 @@ export default function SaisiePWA() {
         }
 
         // 4. Recréer l'écriture avec les nouvelles lignes
+        const journal = journaux.find(j => j.id === formData.journal_id);
+        const journalCode = journal?.code || 'OD';
+
         console.log('✨ Création de', lignesValides.length, 'nouvelles lignes');
         for (const ligne of lignesValides) {
           const ligneData = {
-            journalId: formData.journal_id,
             exerciceId: formData.exercice_id,
             date: formData.date_ecriture,
+            journal: journalCode,
             pieceRef: formData.numero_piece,
             compteNumero: ligne.numero_compte,
             libelle: ligne.libelle_compte,
             debit: Number(ligne.debit),
             credit: Number(ligne.credit),
-            entrepriseId: selectedEntrepriseId,
           };
           console.log('  → Création ligne:', ligneData);
           await createEcriture(ligneData);
