@@ -7,6 +7,7 @@ import {
   getAllEcritures,
   getAllComptes
 } from '../../lib/storageAdapter';
+import { getLibelleCompte } from '../../data/planComptable';
 
 interface Entreprise {
   id: number;
@@ -217,7 +218,6 @@ export default function BalanceComptablePWA() {
       // Calculer les totaux à partir des écritures
       ecrituresFiltrees.forEach((ecriture: Ecriture) => {
         const numeroCompte = ecriture.compteNumero || ecriture.compte_numero || '';
-        const libelleCompte = ecriture.libelle || '';
 
         // Créer le compte s'il n'existe pas déjà
         if (!comptesMap.has(numeroCompte)) {
@@ -231,9 +231,12 @@ export default function BalanceComptablePWA() {
           if (compteDebut && numeroCompte < compteDebut) return;
           if (compteFin && numeroCompte > compteFin) return;
 
+          // Utiliser le nom du compte depuis le plan comptable
+          const nomCompte = getLibelleCompte(numeroCompte) || numeroCompte;
+
           comptesMap.set(numeroCompte, {
             numero_compte: numeroCompte,
-            libelle: libelleCompte,
+            libelle: nomCompte,
             total_debit: 0,
             total_credit: 0,
             solde_debiteur: 0,
