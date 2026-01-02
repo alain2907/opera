@@ -235,6 +235,17 @@ export default function BalanceComptablePWA() {
           const comptePersonnalise = allComptes.find((c: Compte) =>
             (c.numeroCompte || c.numero_compte) === numeroCompte
           );
+
+          // Debug pour comprendre pourquoi certains comptes n'ont pas de nom
+          if (numeroCompte === '4456651') {
+            console.log('🔍 Debug compte 4456651:', {
+              planComptable: getLibelleCompte(numeroCompte),
+              comptePersonnalise,
+              allComptesCount: allComptes.length,
+              tousLesNumeros: allComptes.map((c: Compte) => c.numeroCompte || c.numero_compte).slice(0, 10)
+            });
+          }
+
           const nomCompte = getLibelleCompte(numeroCompte)
             || comptePersonnalise?.libelle
             || comptePersonnalise?.nom
