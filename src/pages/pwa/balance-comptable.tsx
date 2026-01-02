@@ -231,8 +231,14 @@ export default function BalanceComptablePWA() {
           if (compteDebut && numeroCompte < compteDebut) return;
           if (compteFin && numeroCompte > compteFin) return;
 
-          // Utiliser le nom du compte depuis le plan comptable
-          const nomCompte = getLibelleCompte(numeroCompte) || numeroCompte;
+          // Chercher le nom du compte : 1) plan comptable standard, 2) comptes personnalisés dans la base, 3) numéro
+          const comptePersonnalise = allComptes.find((c: Compte) =>
+            (c.numeroCompte || c.numero_compte) === numeroCompte
+          );
+          const nomCompte = getLibelleCompte(numeroCompte)
+            || comptePersonnalise?.libelle
+            || comptePersonnalise?.nom
+            || numeroCompte;
 
           comptesMap.set(numeroCompte, {
             numero_compte: numeroCompte,
