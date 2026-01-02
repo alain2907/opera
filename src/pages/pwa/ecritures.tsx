@@ -483,6 +483,7 @@ export default function SaisiePWA() {
         });
 
         // 3. Supprimer toutes les anciennes lignes
+        console.log('🗑️ Suppression de', anciennesLignes.length, 'anciennes lignes');
         for (const ligne of anciennesLignes) {
           await deleteEcriture(ligne.id);
         }
@@ -498,7 +499,9 @@ export default function SaisiePWA() {
             credit: Number(l.credit),
           })),
         };
+        console.log('✨ Création de la nouvelle écriture:', payload);
         await createEcriture(payload);
+        console.log('✅ Écriture créée avec succès');
 
         setSuccess(`Écriture mise à jour (${anciennesLignes.length} ligne(s) supprimée(s), ${lignesValides.length} ligne(s) créée(s))`);
         setEditingEcriture(null);
