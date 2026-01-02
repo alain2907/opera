@@ -447,7 +447,7 @@ export default function BalanceComptablePWA() {
     // En-tête CSV
     const headers = [
       'N° Compte',
-      'Libellé',
+      'Nom du compte',
       'Total Débit',
       'Total Crédit',
       'Solde Débiteur',
@@ -710,7 +710,7 @@ export default function BalanceComptablePWA() {
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                     <th className="px-4 py-3 text-left text-sm font-semibold">Numéro</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Libellé</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Nom du compte</th>
                     <th className="px-4 py-3 text-right text-sm font-semibold">Total Débit</th>
                     <th className="px-4 py-3 text-right text-sm font-semibold">Total Crédit</th>
                     <th className="px-4 py-3 text-right text-sm font-semibold">Solde Débiteur</th>
