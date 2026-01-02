@@ -408,6 +408,15 @@ export default function ImportCSVPWA() {
         }
       }
 
+      // Sauvegarder tous les mappings libellé → compte pour les prochains imports
+      const newMappings: { [key: string]: string } = { ...libelleCompteMap };
+      csvLines.filter(line => !line.isBalanceLine && line.compte).forEach(line => {
+        newMappings[line.libelle] = line.compte!;
+      });
+      setLibelleCompteMap(newMappings);
+      saveMapToLocalStorage(newMappings);
+      console.log('💾 Mappings sauvegardés:', newMappings);
+
       alert(`✓ ${importedCount} écriture(s) importée(s) avec succès !`);
       setStep('done');
     } catch (error) {
