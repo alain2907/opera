@@ -242,13 +242,15 @@ export default function SaisiePWA() {
           const exerciceId = premiere.exerciceId || premiere.exercice_id;
           const dateEcritureFormatee = dateFromLigne.split('T')[0];
 
-          setFormData({
+          const formDataUpdated = {
             journal_id: journalId || 1,
             exercice_id: exerciceId || selectedExerciceId || 1,
             date_ecriture: dateEcritureFormatee,
             numero_piece: pieceRefFromLigne,
             libelle: premiere.libelle || '',
-          });
+          };
+
+          setFormData(formDataUpdated);
 
           // Synchroniser le mois de saisie avec la date de l'écriture
           setSaisieMonth(dateEcritureFormatee.slice(0, 7));
@@ -264,7 +266,7 @@ export default function SaisiePWA() {
           setLignes(lignesChargees);
 
           // 5. Stocker l'ID de la première ligne pour l'édition
-          setEditingEcriture({ id: premiere.id, ...formData, lignes: lignesChargees });
+          setEditingEcriture({ id: premiere.id, ...formDataUpdated, lignes: lignesChargees });
           setSuccess(`Écriture #${pieceRefFromLigne} chargée pour modification`);
         } catch (err) {
           console.error('Erreur chargement écriture par ID:', err);
