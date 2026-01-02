@@ -10,7 +10,6 @@ import {
   getAllExercices,
   getAllComptes,
   createEcriture,
-  updateEcriture,
   createCompte,
   getEcrituresByExercice,
   getAllEcritures,
@@ -466,6 +465,29 @@ export default function SaisiePWA() {
         if (lignesValides.length < 2) {
           throw new Error('Au moins 2 lignes sont requises');
         }
+
+        // 1. Charger la ligne de référence pour obtenir piece_ref et date
+        const ligneRef = await getEcriture(editingEcriture.id);
+        if (!ligneRef) {
+          throw new Error('Écriture introuvable');
+        }
+
+        const pieceRef = ligneRef.pieceRef || ligneRef.piece_ref;
+        const date = ligneRef.date;
+
+        // 2. Charger toutes les anciennes lignes de l'écriture
+        const toutesEcritures = await getAllEcritures();
+        const anciennesLignes = toutesEcritures.filter((e: any) => {
+          const ref = e.pieceRef || e.piece_ref;
+          return ref === pieceRef && e.date === date;
+        });
+
+        // 3. Supprimer toutes les anciennes lignes
+        for (const ligne of anciennesLignes) {
+          await deleteEcriture(ligne.id);
+        }
+
+        // 4. Recréer l'écriture avec les nouvelles lignes
         const payload = {
           ...formData,
           entreprise_id: selectedEntrepriseId,
@@ -476,8 +498,9 @@ export default function SaisiePWA() {
             credit: Number(l.credit),
           })),
         };
-        await updateEcriture(editingEcriture.id, payload);
-        setSuccess('Écriture mise à jour');
+        await createEcriture(payload);
+
+        setSuccess(`Écriture mise à jour (${anciennesLignes.length} ligne(s) supprimée(s), ${lignesValides.length} ligne(s) créée(s))`);
         setEditingEcriture(null);
       } else {
         // MODE CRÉATION
