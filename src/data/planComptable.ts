@@ -84,5 +84,25 @@ export const searchCompte = (query: string): Array<{ code: string; libelle: stri
 };
 
 export const getLibelleCompte = (code: string): string => {
-  return PLAN_COMPTABLE[code as keyof typeof PLAN_COMPTABLE] || '';
+  // Chercher d'abord le code exact
+  if (PLAN_COMPTABLE[code as keyof typeof PLAN_COMPTABLE]) {
+    return PLAN_COMPTABLE[code as keyof typeof PLAN_COMPTABLE];
+  }
+
+  // Si pas trouvé, chercher un compte parent (ex: 101 -> 101000, 4456651 -> 445660)
+  // On rajoute des zéros progressivement jusqu'à 6 chiffres
+  const codeNormalise = code.padEnd(6, '0');
+  if (PLAN_COMPTABLE[codeNormalise as keyof typeof PLAN_COMPTABLE]) {
+    return PLAN_COMPTABLE[codeNormalise as keyof typeof PLAN_COMPTABLE];
+  }
+
+  // Chercher le compte parent le plus proche
+  for (let len = code.length + 1; len <= 6; len++) {
+    const codeTeste = code.substring(0, Math.min(code.length, len)).padEnd(6, '0');
+    if (PLAN_COMPTABLE[codeTeste as keyof typeof PLAN_COMPTABLE]) {
+      return PLAN_COMPTABLE[codeTeste as keyof typeof PLAN_COMPTABLE];
+    }
+  }
+
+  return '';
 };
