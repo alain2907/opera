@@ -1070,7 +1070,8 @@ export default function SaisiePWA() {
 
                     const confirmation = confirm(
                       `⚠️ ATTENTION ⚠️\n\n` +
-                      `Voulez-vous vraiment supprimer cette écriture ?\n\n` +
+                      `Voulez-vous vraiment supprimer cette écriture complète ?\n\n` +
+                      `Toutes les lignes (débit/crédit) seront supprimées.\n\n` +
                       `Cette action est irréversible.`
                     );
 
@@ -1078,8 +1079,29 @@ export default function SaisiePWA() {
 
                     try {
                       setLoading(true);
-                      await deleteEcriture(editingEcriture.id);
-                      setSuccess('Écriture supprimée avec succès');
+
+                      // 1. Charger la ligne de référence pour obtenir piece_ref et date
+                      const ligneRef = await getEcriture(editingEcriture.id);
+                      if (!ligneRef) {
+                        throw new Error('Écriture introuvable');
+                      }
+
+                      const pieceRef = ligneRef.pieceRef || ligneRef.piece_ref;
+                      const date = ligneRef.date;
+
+                      // 2. Charger toutes les lignes de la même écriture
+                      const toutesEcritures = await getAllEcritures();
+                      const lignesASupprimer = toutesEcritures.filter((e: any) => {
+                        const ref = e.pieceRef || e.piece_ref;
+                        return ref === pieceRef && e.date === date;
+                      });
+
+                      // 3. Supprimer toutes les lignes
+                      for (const ligne of lignesASupprimer) {
+                        await deleteEcriture(ligne.id);
+                      }
+
+                      setSuccess(`Écriture complète supprimée (${lignesASupprimer.length} ligne(s))`);
                       setEditingEcriture(null);
                       setFormData({
                         journal_id: 1,
