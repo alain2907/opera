@@ -489,19 +489,23 @@ export default function SaisiePWA() {
         }
 
         // 4. Recréer l'écriture avec les nouvelles lignes
-        const payload = {
-          ...formData,
-          entreprise_id: selectedEntrepriseId,
-          lignes: lignesValides.map(l => ({
-            numero_compte: l.numero_compte,
-            libelle_compte: l.libelle_compte,
-            debit: Number(l.debit),
-            credit: Number(l.credit),
-          })),
-        };
-        console.log('✨ Création de la nouvelle écriture:', payload);
-        await createEcriture(payload);
-        console.log('✅ Écriture créée avec succès');
+        console.log('✨ Création de', lignesValides.length, 'nouvelles lignes');
+        for (const ligne of lignesValides) {
+          const ligneData = {
+            journalId: formData.journal_id,
+            exerciceId: formData.exercice_id,
+            date: formData.date_ecriture,
+            pieceRef: formData.numero_piece,
+            compteNumero: ligne.numero_compte,
+            libelle: ligne.libelle_compte,
+            debit: Number(ligne.debit),
+            credit: Number(ligne.credit),
+            entrepriseId: selectedEntrepriseId,
+          };
+          console.log('  → Création ligne:', ligneData);
+          await createEcriture(ligneData);
+        }
+        console.log('✅ Toutes les lignes créées avec succès');
 
         setSuccess(`Écriture mise à jour (${anciennesLignes.length} ligne(s) supprimée(s), ${lignesValides.length} ligne(s) créée(s))`);
         setEditingEcriture(null);
