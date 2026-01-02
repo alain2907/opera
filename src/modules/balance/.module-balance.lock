@@ -1,0 +1,17 @@
+# Module Balance - Fichier de protection
+
+Ce fichier `.module-balance.lock` protège le module Balance contre les modifications non autorisées.
+
+## Informations du module
+- **Nom** : Balance
+- **Version** : 1.0.0
+- **Date de création** : 2025-11-18
+- **Statut** : Protégé
+
+## Règles de modification
+- Toute modification nécessite l'autorisation explicite de l'utilisateur
+- Le déploiement automatique vérifie la présence de ce fichier
+- Ne pas supprimer ce fichier sans autorisation
+
+## Déploiement
+Le script `deploy-modules.js` vérifie ce fichier avant de déployer le module vers `src/pages/`.

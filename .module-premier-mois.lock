@@ -1,0 +1,39 @@
+# Module Premier Mois - Fichier de Protection
+
+**⚠️ ATTENTION : Ce fichier documente tous les fichiers du module "Premier Mois".**
+
+## Fichiers du module
+
+### Pages
+- `src/pages/premier-mois.tsx` - Liste des écritures du premier mois
+- `src/pages/premier-mois/edit/[id].tsx` - Redirection vers édition
+
+### Menu
+- `src/components/TopMenu.tsx` (ligne 144) - Menu États → Premier mois
+
+## Modifications autorisées
+
+✅ **AUTORISÉ** :
+- Améliorer l'UI de la liste
+- Ajouter des colonnes au tableau
+- Améliorer les messages d'erreur
+- Optimiser les performances de filtrage
+
+❌ **INTERDIT sans validation** :
+- Modifier la logique de calcul du premier mois
+- Supprimer les vérifications d'équilibre
+- Changer le comportement de suppression
+- Ajouter la création d'écritures (module en lecture seule pour la création)
+
+## Tests requis avant modification
+
+1. Vérifier que le premier mois est bien calculé (date début → dernier jour du mois)
+2. Vérifier que le filtrage fonctionne avec différentes dates d'exercice
+3. Vérifier l'édition (redirection vers saisie rapide)
+4. Vérifier la suppression avec confirmation
+5. Tester avec 0 écriture, 1 écriture, et >50 écritures
+
+## Version
+
+Créé le : 2025-11-17
+Version du module : 1.0.0

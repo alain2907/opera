@@ -1,0 +1,104 @@
+# MODULE GESTION COMPTES - FICHIERS PROTÉGÉS
+# ⚠️ NE PAS MODIFIER SANS LIRE modules/gestion-comptes/CONTRAINTES.md
+
+## FICHIERS DU MODULE (protégés)
+
+### Pages
+- src/pages/comptes.tsx                  # Création de compte
+- src/pages/comptes/edit/[id].tsx        # Édition/Suppression de compte
+- src/pages/comptes/[numero].tsx         # Détails compte (existant avant module)
+
+### Composants
+- src/components/comptes/CompteForm.tsx  # Formulaire réutilisable CRUD
+
+### API
+- src/api/comptes.ts                     # Client API comptes (existant)
+
+### Types
+- src/types/compte.ts                    # Interface Compte (existant)
+
+## RÈGLES DE MODIFICATION
+
+### ✅ AUTORISÉ
+- Lire les fichiers pour comprendre
+- Ajouter des console.log pour debug
+- Corriger des bugs critiques SI documenté dans CHANGELOG.md
+
+### ❌ INTERDIT
+- Modifier la structure du CompteForm (3 sections colorées)
+- Changer les redirections (toujours vers /plan-comptable)
+- Modifier les props des composants
+- Supprimer la validation des champs
+- Changer l'API utilisée (comptesApi)
+
+## INTÉGRATION AVEC L'APP
+
+### Routes créées par le module
+1. /comptes                    → Création nouveau compte
+2. /comptes/edit/[id]          → Édition/Suppression compte
+
+### Routes existantes (non modifiées)
+1. /comptes/[numero]           → Détails compte (grand livre)
+2. /plan-comptable             → Liste tous les comptes
+
+### Navigation
+- Plan comptable → "+ Nouveau compte" → /comptes
+- Plan comptable → Bouton "Éditer" → /comptes/edit/[id]
+- Après CRUD → Redirect /plan-comptable
+
+## DÉPENDANCES
+
+### Contexts requis
+- EntrepriseContext (entreprise, exercice)
+
+### APIs requises
+- comptesApi.getAll(entrepriseId)
+- comptesApi.create(data)
+- comptesApi.update(id, data)
+- comptesApi.delete(id)
+
+### Types requis
+- Compte interface
+
+## TESTS AVANT MODIFICATION
+
+Avant de modifier un fichier du module, TOUJOURS tester:
+
+1. ✅ Création d'un compte depuis /comptes
+2. ✅ Édition d'un compte depuis /plan-comptable
+3. ✅ Suppression d'un compte
+4. ✅ Validation des champs obligatoires
+5. ✅ Redirections vers /plan-comptable
+6. ✅ Intégration avec EntrepriseContext
+
+## DOCUMENTATION
+
+Pour toute modification, consulter dans l'ordre:
+
+1. modules/gestion-comptes/README.md      → Vue d'ensemble
+2. modules/gestion-comptes/CONTRAINTES.md → Règles strictes
+3. modules/gestion-comptes/CONFIG.md      → Configuration
+4. modules/gestion-comptes/CHANGELOG.md   → Historique
+
+## CHANGELOG
+
+### 2025-11-17 v1.1.0
+- Fix: Redirections corrigées vers /plan-comptable (au lieu de /edition-comptes)
+- Tous les fichiers intégrés et fonctionnels
+
+### 2025-11-17 v1.0.0
+- Création du module complet
+- Pages: /comptes, /comptes/edit/[id]
+- Composant: CompteForm avec 3 sections colorées
+- Documentation complète (README, CONFIG, CONTRAINTES, CHANGELOG)
+
+## CONTACT
+
+En cas de problème avec le module:
+1. Vérifier CONTRAINTES.md
+2. Vérifier CHANGELOG.md
+3. Consulter les logs console navigateur
+4. Tester en mode développement local
+
+---
+🔒 Fichier de protection - Dernière mise à jour: 2025-11-17

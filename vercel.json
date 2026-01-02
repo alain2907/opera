@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_API_MODE": "proxy",
+    "NEXT_PUBLIC_CLOUD_API_URL": "https://violent-karon-gestion3008-free-e7089456.koyeb.app/api"
+  }
+}
