@@ -505,6 +505,11 @@ export default function SaisiePWA() {
 
         setSuccess(`Écriture mise à jour (${anciennesLignes.length} ligne(s) supprimée(s), ${lignesValides.length} ligne(s) créée(s))`);
         setEditingEcriture(null);
+
+        // Retourner à la page précédente après la mise à jour
+        setTimeout(() => {
+          router.back();
+        }, 1500);
       } else {
         // MODE CRÉATION
         // 1) envoyer les brouillons
