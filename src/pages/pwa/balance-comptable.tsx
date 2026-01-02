@@ -974,11 +974,11 @@ export default function BalanceComptablePWA() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => {
-                      const pieceRef = ecritureDetaillee.pieceRef || ecritureDetaillee.piece_ref;
-                      if (pieceRef) {
-                        router.push(`/pwa/ecritures?piece=${encodeURIComponent(pieceRef)}`);
+                      const ecritureId = ecritureDetaillee.id;
+                      if (ecritureId) {
+                        router.push(`/pwa/ecritures?id=${ecritureId}`);
                       } else {
-                        alert('Impossible d\'éditer cette écriture : référence manquante');
+                        alert('Impossible d\'éditer cette écriture : ID manquant');
                       }
                     }}
                     className="px-4 py-2 bg-white text-green-600 rounded hover:bg-green-50 transition-colors font-semibold text-sm"
