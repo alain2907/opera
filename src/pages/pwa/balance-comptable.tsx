@@ -47,7 +47,7 @@ interface Compte {
 
 interface LigneBalance {
   numero_compte: string;
-  libelle: string;
+  nom_compte: string;
   total_debit: number;
   total_credit: number;
   solde_debiteur: number;
@@ -207,7 +207,7 @@ export default function BalanceComptablePWA() {
 
         comptesMap.set(numeroCompte, {
           numero_compte: numeroCompte,
-          libelle: libelle,
+          nom_compte: libelle,
           total_debit: 0,
           total_credit: 0,
           solde_debiteur: 0,
@@ -236,16 +236,6 @@ export default function BalanceComptablePWA() {
             (c.numeroCompte || c.numero_compte) === numeroCompte
           );
 
-          // Debug pour comprendre pourquoi certains comptes n'ont pas de nom
-          if (numeroCompte === '4456651') {
-            console.log('🔍 Debug compte 4456651:', {
-              planComptable: getLibelleCompte(numeroCompte),
-              comptePersonnalise,
-              allComptesCount: allComptes.length,
-              tousLesNumeros: allComptes.map((c: Compte) => c.numeroCompte || c.numero_compte).slice(0, 10)
-            });
-          }
-
           const nomCompte = getLibelleCompte(numeroCompte)
             || comptePersonnalise?.libelle
             || comptePersonnalise?.nom
@@ -253,7 +243,7 @@ export default function BalanceComptablePWA() {
 
           comptesMap.set(numeroCompte, {
             numero_compte: numeroCompte,
-            libelle: nomCompte,
+            nom_compte: nomCompte,
             total_debit: 0,
             total_credit: 0,
             solde_debiteur: 0,
@@ -467,7 +457,7 @@ export default function BalanceComptablePWA() {
     // Lignes de données
     const rows = lignesBalance.map(ligne => [
       ligne.numero_compte,
-      ligne.libelle,
+      ligne.nom_compte,
       ligne.total_debit.toFixed(2),
       ligne.total_credit.toFixed(2),
       ligne.solde_debiteur.toFixed(2),
@@ -732,14 +722,14 @@ export default function BalanceComptablePWA() {
                     <tr
                       key={ligne.numero_compte}
                       className="hover:bg-blue-50 transition-colors cursor-pointer"
-                      onClick={() => chargerGrandLivreCompte(ligne.numero_compte, ligne.libelle)}
+                      onClick={() => chargerGrandLivreCompte(ligne.numero_compte, ligne.nom_compte)}
                       title="Cliquer pour voir le grand-livre du compte"
                     >
                       <td className="px-4 py-3 text-sm font-mono font-semibold text-blue-600">
                         {ligne.numero_compte}
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        {ligne.libelle}
+                        {ligne.nom_compte}
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-mono">
                         {ligne.total_debit > 0 ? formatMontant(ligne.total_debit) : '-'}
@@ -868,7 +858,7 @@ export default function BalanceComptablePWA() {
                   <h2 className="text-2xl font-bold mb-2">
                     📘 Grand Livre du compte {compteSelectionne.numero}
                   </h2>
-                  <p className="text-blue-100">{compteSelectionne.libelle}</p>
+                  <p className="text-blue-100">{compteSelectionne.nom_compte}</p>
                 </div>
                 <button
                   onClick={() => setCompteSelectionne(null)}
