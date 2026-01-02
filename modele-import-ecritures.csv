@@ -1,0 +1,9 @@
+date,journal,pieceRef,compteNumero,libelle,debit,credit
+01/05/2025,AC,FACT001,607000,Achat marchandises,1000.00,
+01/05/2025,AC,FACT001,4456651,TVA déductible 20%,200.00,
+01/05/2025,AC,FACT001,401,Fournisseur XYZ,,1200.00
+15/05/2025,VE,VTE001,411,Client ABC,1200.00,
+15/05/2025,VE,VTE001,707000,Vente marchandises,,1000.00
+15/05/2025,VE,VTE001,4457161,TVA collectée 20%,,200.00
+20/05/2025,BQ,VIR001,5121,Banque,5000.00,
+20/05/2025,BQ,VIR001,455,Apport associé,,5000.00
