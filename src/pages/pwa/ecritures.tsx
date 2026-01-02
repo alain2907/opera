@@ -15,6 +15,7 @@ import {
   getEcrituresByExercice,
   getAllEcritures,
   getEcriture,
+  deleteEcriture,
 } from '../../lib/storageAdapter';
 
 // Hardcoded journals list for PWA
@@ -1062,25 +1063,70 @@ export default function SaisiePWA() {
               {editingEcriture ? 'Modification d\'écriture' : 'Saisie rapide au kilomètre'}
             </h2>
             {editingEcriture && (
-              <button
-                onClick={() => {
-                  setEditingEcriture(null);
-                  setFormData({
-                    journal_id: 1,
-                    exercice_id: selectedExerciceId || 1,
-                    date_ecriture: new Date().toISOString().split('T')[0],
-                    numero_piece: nextNumPiece,
-                    libelle: '',
-                  });
-                  setLignes([
-                    { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
-                    { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
-                  ]);
-                }}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-              >
-                Annuler
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    if (!editingEcriture?.id) return;
+
+                    const confirmation = confirm(
+                      `⚠️ ATTENTION ⚠️\n\n` +
+                      `Voulez-vous vraiment supprimer cette écriture ?\n\n` +
+                      `Cette action est irréversible.`
+                    );
+
+                    if (!confirmation) return;
+
+                    try {
+                      setLoading(true);
+                      await deleteEcriture(editingEcriture.id);
+                      setSuccess('Écriture supprimée avec succès');
+                      setEditingEcriture(null);
+                      setFormData({
+                        journal_id: 1,
+                        exercice_id: selectedExerciceId || 1,
+                        date_ecriture: new Date().toISOString().split('T')[0],
+                        numero_piece: nextNumPiece,
+                        libelle: '',
+                      });
+                      setLignes([
+                        { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
+                        { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
+                      ]);
+
+                      // Retourner à la page précédente
+                      setTimeout(() => {
+                        router.back();
+                      }, 1500);
+                    } catch (err: any) {
+                      setError('Erreur lors de la suppression : ' + (err.message || 'Erreur inconnue'));
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"
+                >
+                  🗑️ Supprimer
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingEcriture(null);
+                    setFormData({
+                      journal_id: 1,
+                      exercice_id: selectedExerciceId || 1,
+                      date_ecriture: new Date().toISOString().split('T')[0],
+                      numero_piece: nextNumPiece,
+                      libelle: '',
+                    });
+                    setLignes([
+                      { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
+                      { numero_compte: '', libelle_compte: '', debit: 0, credit: 0 },
+                    ]);
+                  }}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                  Annuler
+                </button>
+              </div>
             )}
           </div>
 
