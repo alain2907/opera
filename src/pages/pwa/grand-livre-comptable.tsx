@@ -178,8 +178,25 @@ export default function GrandLivreComptablePWA() {
         });
       });
 
-      // Calculer solde final pour chaque compte
+      // Trier les lignes de chaque compte par date chronologique
       const comptes = Array.from(comptesMap.values()).map(compte => {
+        // Trier les lignes par date
+        compte.lignes.sort((a, b) => {
+          if (a.date < b.date) return -1;
+          if (a.date > b.date) return 1;
+          return 0;
+        });
+
+        // Recalculer les soldes progressifs après tri
+        let soldeProgressif = 0;
+        compte.lignes = compte.lignes.map(ligne => {
+          soldeProgressif += ligne.debit - ligne.credit;
+          return {
+            ...ligne,
+            solde: soldeProgressif
+          };
+        });
+
         compte.soldeFinal = compte.totalDebit - compte.totalCredit;
         return compte;
       });
