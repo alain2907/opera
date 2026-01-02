@@ -34,7 +34,8 @@ export default function PWANavbar() {
       label: '📥 Import',
       submenu: [
         { label: '📥 Import FEC', path: '/pwa/fec' },
-        { label: '📊 Import CSV', path: '/pwa/import-csv' },
+        { label: '📊 Import CSV Banque', path: '/pwa/import-csv' },
+        { label: '📝 Import Écritures CSV', path: '/pwa/import-ecritures' },
       ]
     },
     {
