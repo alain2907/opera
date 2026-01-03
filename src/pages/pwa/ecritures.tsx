@@ -286,7 +286,7 @@ export default function SaisiePWA() {
             libelle_compte: e.libelle || '',
             debit: Number(e.debit || 0),
             credit: Number(e.credit || 0),
-            date: journalFromLigne === 'BQ' ? e.date : undefined, // Garder la date pour les écritures de banque
+            date: e.date, // Garder la date de chaque ligne
             piece_ref: journalFromLigne === 'BQ' ? (e.pieceRef || e.piece_ref) : undefined, // Garder le N° pièce pour les écritures de banque
           }));
 
