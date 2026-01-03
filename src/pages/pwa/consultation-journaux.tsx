@@ -121,6 +121,11 @@ export default function JournauxPWA() {
       console.log('Exemple écriture:', allEcritures[0]);
       console.log('Journaux présents:', [...new Set(allEcritures.map((e: any) => e.journal))]);
 
+      // Debug: afficher les mois disponibles pour le journal sélectionné
+      const ecrituresJournal = allEcritures.filter((e: any) => e.journal === selectedJournal);
+      const moisJournal = [...new Set(ecrituresJournal.map((e: any) => e.date ? e.date.substring(0, 7) : ''))];
+      console.log(`Mois disponibles pour ${selectedJournal}:`, moisJournal.sort());
+
       // Filtrer par journal et mois
       const filtered = allEcritures.filter((e: any) => {
         const eJournal = e.journal;
