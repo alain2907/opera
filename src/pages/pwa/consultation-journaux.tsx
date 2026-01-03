@@ -75,19 +75,24 @@ export default function JournauxPWA() {
     if (!router.isReady) return;
 
     const { journal, month, entreprise, exercice } = router.query;
+    console.log('🔍 URL params:', { journal, month, entreprise, exercice });
 
     if (entreprise || exercice || journal || month) {
       setFromUrlParams(true);
       if (entreprise) {
+        console.log('✅ Setting entreprise:', Number(entreprise));
         setSelectedEntrepriseId(Number(entreprise));
       }
       if (exercice) {
+        console.log('✅ Setting exercice:', Number(exercice));
         setSelectedExerciceId(Number(exercice));
       }
       if (journal) {
+        console.log('✅ Setting journal:', journal);
         setSelectedJournal(journal as string);
       }
       if (month) {
+        console.log('✅ Setting month:', month);
         setSelectedMonth(month as string);
       }
     }
@@ -111,9 +116,12 @@ export default function JournauxPWA() {
 
   // Réinitialiser le mois quand on change de journal (sauf si venant de l'URL)
   useEffect(() => {
+    console.log('📝 Journal changed, fromUrlParams:', fromUrlParams, 'selectedJournal:', selectedJournal);
     if (!fromUrlParams) {
+      console.log('❌ Resetting month because not from URL');
       setSelectedMonth('');
     } else {
+      console.log('✅ Preserving month from URL');
       setFromUrlParams(false); // Reset du flag après première utilisation
     }
   }, [selectedJournal]);
