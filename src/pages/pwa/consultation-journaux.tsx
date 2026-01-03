@@ -140,18 +140,19 @@ export default function JournauxPWA() {
   }, [selectedJournal]);
 
   useEffect(() => {
-    console.log('🔄 Check loading:', { selectedEntrepriseId, selectedJournal, selectedMonth });
-    if (selectedEntrepriseId && selectedJournal && selectedMonth) {
+    console.log('🔄 Check loading:', { selectedEntrepriseId, selectedJournal, selectedMonth, exercicesCount: exercices.length });
+    if (selectedEntrepriseId && selectedJournal && selectedMonth && exercices.length > 0) {
       console.log('✅ Loading écritures...');
       loadEcritures();
     } else {
       console.log('❌ Not loading - missing:', {
         entreprise: !selectedEntrepriseId,
         journal: !selectedJournal,
-        month: !selectedMonth
+        month: !selectedMonth,
+        exercices: exercices.length === 0
       });
     }
-  }, [selectedEntrepriseId, selectedExerciceId, selectedJournal, selectedMonth]);
+  }, [selectedEntrepriseId, selectedExerciceId, selectedJournal, selectedMonth, exercices]);
 
   const loadInitialData = async () => {
     try {
