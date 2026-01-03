@@ -64,6 +64,7 @@ export default function JournauxPWA() {
   const [loading, setLoading] = useState(false);
   const [migrating, setMigrating] = useState(false);
   const [migrationResult, setMigrationResult] = useState<string | null>(null);
+  const [fromUrlParams, setFromUrlParams] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -75,17 +76,20 @@ export default function JournauxPWA() {
 
     const { journal, month, entreprise, exercice } = router.query;
 
-    if (entreprise) {
-      setSelectedEntrepriseId(Number(entreprise));
-    }
-    if (exercice) {
-      setSelectedExerciceId(Number(exercice));
-    }
-    if (journal) {
-      setSelectedJournal(journal as string);
-    }
-    if (month) {
-      setSelectedMonth(month as string);
+    if (entreprise || exercice || journal || month) {
+      setFromUrlParams(true);
+      if (entreprise) {
+        setSelectedEntrepriseId(Number(entreprise));
+      }
+      if (exercice) {
+        setSelectedExerciceId(Number(exercice));
+      }
+      if (journal) {
+        setSelectedJournal(journal as string);
+      }
+      if (month) {
+        setSelectedMonth(month as string);
+      }
     }
   }, [router.isReady, router.query]);
 
@@ -105,9 +109,13 @@ export default function JournauxPWA() {
     }
   }, [selectedEntrepriseId, exercices]);
 
-  // Réinitialiser le mois quand on change de journal
+  // Réinitialiser le mois quand on change de journal (sauf si venant de l'URL)
   useEffect(() => {
-    setSelectedMonth('');
+    if (!fromUrlParams) {
+      setSelectedMonth('');
+    } else {
+      setFromUrlParams(false); // Reset du flag après première utilisation
+    }
   }, [selectedJournal]);
 
   useEffect(() => {
