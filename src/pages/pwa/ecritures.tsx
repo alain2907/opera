@@ -217,8 +217,16 @@ export default function SaisiePWA() {
         try {
           // 1. Charger la ligne de référence
           const ligneRef = await getEcriture(Number(ligneId));
+          console.log('Ligne de référence chargée:', ligneRef);
+
           if (!ligneRef) {
             setError(`Ligne #${ligneId} introuvable`);
+            return;
+          }
+
+          if (!ligneRef.date) {
+            setError(`La ligne #${ligneId} n'a pas de date`);
+            console.error('Ligne sans date:', ligneRef);
             return;
           }
 
