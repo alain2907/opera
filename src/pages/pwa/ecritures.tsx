@@ -243,25 +243,12 @@ export default function SaisiePWA() {
               return e.numeroEcriture === numeroEcritureFromLigne;
             });
           } else {
-            // Sinon, utiliser l'ancienne méthode (pour compatibilité avec anciennes données)
-            const moisFromLigne = dateFromLigne.substring(0, 7); // AAAA-MM
-
-            // Pour le journal de banque : charger TOUTES les lignes du mois
-            // (chaque ligne a sa propre date et piece_ref, mais elles forment une seule écriture mensuelle)
-            if (journalFromLigne === 'BQ') {
-              ecrituresGroupe = toutesEcritures.filter((e: any) => {
-                if (!e.date) return false;
-                const moisEcriture = e.date.substring(0, 7);
-                return e.journal === 'BQ' && moisEcriture === moisFromLigne;
-              });
-            } else {
-              // Pour les autres journaux : grouper par piece_ref + date
-              ecrituresGroupe = toutesEcritures.filter((e: any) => {
-                if (!e.date) return false;
-                const ref = e.pieceRef || e.piece_ref;
-                return ref === pieceRefFromLigne && e.date === dateFromLigne;
-              });
-            }
+            // Sinon, utiliser l'ancienne méthode : grouper par piece_ref
+            // (pour compatibilité avec anciennes données sans numeroEcriture)
+            ecrituresGroupe = toutesEcritures.filter((e: any) => {
+              const ref = e.pieceRef || e.piece_ref;
+              return ref === pieceRefFromLigne;
+            });
           }
 
           if (ecrituresGroupe.length === 0) {
@@ -273,7 +260,12 @@ export default function SaisiePWA() {
           const premiere = ecrituresGroupe[0];
           const journalId = premiere.journalId || premiere.journal_id;
           const exerciceId = premiere.exerciceId || premiere.exercice_id;
-          const dateEcritureFormatee = dateFromLigne.split('T')[0];
+
+          // Pour les écritures de banque, ne pas utiliser la date de la ligne cliquée
+          // car chaque ligne a sa propre date
+          const dateEcritureFormatee = journalFromLigne === 'BQ'
+            ? dateFromLigne.substring(0, 7) + '-01' // Premier jour du mois comme date de référence
+            : dateFromLigne.split('T')[0];
 
           const formDataUpdated = {
             journal_id: journalId || 1,
