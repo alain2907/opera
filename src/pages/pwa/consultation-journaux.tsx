@@ -71,11 +71,23 @@ export default function JournauxPWA() {
 
   // Charger depuis les paramètres URL
   useEffect(() => {
-    if (router.query.journal && router.query.month) {
-      setSelectedJournal(router.query.journal as string);
-      setSelectedMonth(router.query.month as string);
+    if (!router.isReady) return;
+
+    const { journal, month, entreprise, exercice } = router.query;
+
+    if (entreprise) {
+      setSelectedEntrepriseId(Number(entreprise));
     }
-  }, [router.query]);
+    if (exercice) {
+      setSelectedExerciceId(Number(exercice));
+    }
+    if (journal) {
+      setSelectedJournal(journal as string);
+    }
+    if (month) {
+      setSelectedMonth(month as string);
+    }
+  }, [router.isReady, router.query]);
 
   // Réinitialiser l'exercice quand on change d'entreprise
   useEffect(() => {

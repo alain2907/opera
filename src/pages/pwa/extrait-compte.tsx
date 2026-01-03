@@ -193,13 +193,23 @@ export default function ExtraitComptePWA() {
                     const moisEcriture = ecriture.date ? ecriture.date.substring(0, 7) : '';
                     const journal = ecriture.journal || '';
 
+                    // Trouver l'entreprise de l'exercice
+                    const exercice = exercices.find(ex => ex.id === selectedExerciceId);
+                    const entrepriseId = exercice ? (exercice.entrepriseId || exercice.entreprise_id) : null;
+
                     return (
                     <tr
                       key={ecriture.id || index}
                       className="hover:bg-blue-50 transition-colors cursor-pointer"
                       onClick={() => {
                         // Rediriger vers consultation-journaux avec les filtres appropriés
-                        router.push(`/pwa/consultation-journaux?journal=${journal}&month=${moisEcriture}`);
+                        const params = new URLSearchParams({
+                          journal,
+                          month: moisEcriture,
+                          exercice: String(selectedExerciceId || ''),
+                          entreprise: String(entrepriseId || ''),
+                        });
+                        router.push(`/pwa/consultation-journaux?${params.toString()}`);
                       }}
                     >
                       <td className="px-4 py-3 text-sm">
