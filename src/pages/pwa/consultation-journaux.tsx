@@ -127,25 +127,30 @@ export default function JournauxPWA() {
       );
       setExercices(uniqueExercices);
 
-      // Sélectionner la première entreprise par défaut
-      if (allEntreprises.length > 0) {
-        setSelectedEntrepriseId(allEntreprises[0].id);
-      }
-
-      // Sélectionner l'exercice en cours par défaut
-      const exerciceEnCours = uniqueExercices.find((ex: any) => !ex.cloture);
-      if (exerciceEnCours) {
-        setSelectedExerciceId(exerciceEnCours.id);
-      }
-
       // Charger toutes les écritures pour le menu des mois
       const allEcritures = await getAllEcritures();
       setToutesEcritures(allEcritures);
 
-      // Sélectionner le premier journal disponible
-      const journauxUniques = Array.from(new Set(allEcritures.map((e: any) => e.journal).filter(Boolean))).sort();
-      if (journauxUniques.length > 0) {
-        setSelectedJournal(journauxUniques[0]);
+      // Ne pré-sélectionner que si pas de paramètres URL
+      const hasUrlParams = router.query.entreprise || router.query.exercice || router.query.journal || router.query.month;
+
+      if (!hasUrlParams) {
+        // Sélectionner la première entreprise par défaut
+        if (allEntreprises.length > 0) {
+          setSelectedEntrepriseId(allEntreprises[0].id);
+        }
+
+        // Sélectionner l'exercice en cours par défaut
+        const exerciceEnCours = uniqueExercices.find((ex: any) => !ex.cloture);
+        if (exerciceEnCours) {
+          setSelectedExerciceId(exerciceEnCours.id);
+        }
+
+        // Sélectionner le premier journal disponible
+        const journauxUniques = Array.from(new Set(allEcritures.map((e: any) => e.journal).filter(Boolean))).sort();
+        if (journauxUniques.length > 0) {
+          setSelectedJournal(journauxUniques[0]);
+        }
       }
     } catch (error) {
       console.error('Erreur chargement données initiales:', error);
