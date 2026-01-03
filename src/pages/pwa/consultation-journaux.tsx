@@ -64,6 +64,22 @@ export default function JournauxPWA() {
     loadInitialData();
   }, []);
 
+  // Réinitialiser l'exercice quand on change d'entreprise
+  useEffect(() => {
+    if (selectedEntrepriseId) {
+      const exercicesEntreprise = exercices.filter(ex => (ex.entrepriseId || ex.entreprise_id) === selectedEntrepriseId);
+      const exerciceEnCours = exercicesEntreprise.find((ex: any) => !ex.cloture);
+      if (exerciceEnCours) {
+        setSelectedExerciceId(exerciceEnCours.id);
+      } else if (exercicesEntreprise.length > 0) {
+        setSelectedExerciceId(exercicesEntreprise[0].id);
+      } else {
+        setSelectedExerciceId(null);
+      }
+      setSelectedMonth(''); // Réinitialiser le mois aussi
+    }
+  }, [selectedEntrepriseId, exercices]);
+
   useEffect(() => {
     if (selectedEntrepriseId && selectedJournal && selectedMonth) {
       loadEcritures();
@@ -185,6 +201,11 @@ export default function JournauxPWA() {
   const journalLibelle = JOURNAUX.find(j => j.code === selectedJournal)?.libelle || selectedJournal;
   const moisDisponibles = getMoisExercice();
 
+  // Filtrer les exercices par entreprise
+  const exercicesFiltres = selectedEntrepriseId
+    ? exercices.filter(ex => (ex.entrepriseId || ex.entreprise_id) === selectedEntrepriseId)
+    : exercices;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <PWANavbar />
@@ -229,7 +250,7 @@ export default function JournauxPWA() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tous les exercices</option>
-                {exercices.map((ex) => (
+                {exercicesFiltres.map((ex) => (
                   <option key={ex.id} value={ex.id}>
                     {ex.annee} {ex.cloture ? '(Clôturé)' : '(En cours)'}
                   </option>
