@@ -231,27 +231,37 @@ export default function SaisiePWA() {
           const pieceRefFromLigne = ligneRef.pieceRef || ligneRef.piece_ref;
           const dateFromLigne = ligneRef.date;
           const journalFromLigne = ligneRef.journal;
-          const moisFromLigne = dateFromLigne.substring(0, 7); // AAAA-MM
+          const numeroEcritureFromLigne = ligneRef.numeroEcriture;
 
           // 2. Charger toutes les lignes de la même écriture
           const toutesEcritures = await getAllEcritures();
           let ecrituresGroupe: any[];
 
-          // Pour le journal de banque : charger TOUTES les lignes du mois
-          // (chaque ligne a sa propre date et piece_ref, mais elles forment une seule écriture mensuelle)
-          if (journalFromLigne === 'BQ') {
+          // Si numeroEcriture existe, l'utiliser (méthode moderne)
+          if (numeroEcritureFromLigne) {
             ecrituresGroupe = toutesEcritures.filter((e: any) => {
-              if (!e.date) return false;
-              const moisEcriture = e.date.substring(0, 7);
-              return e.journal === 'BQ' && moisEcriture === moisFromLigne;
+              return e.numeroEcriture === numeroEcritureFromLigne;
             });
           } else {
-            // Pour les autres journaux : grouper par piece_ref + date
-            ecrituresGroupe = toutesEcritures.filter((e: any) => {
-              if (!e.date) return false;
-              const ref = e.pieceRef || e.piece_ref;
-              return ref === pieceRefFromLigne && e.date === dateFromLigne;
-            });
+            // Sinon, utiliser l'ancienne méthode (pour compatibilité avec anciennes données)
+            const moisFromLigne = dateFromLigne.substring(0, 7); // AAAA-MM
+
+            // Pour le journal de banque : charger TOUTES les lignes du mois
+            // (chaque ligne a sa propre date et piece_ref, mais elles forment une seule écriture mensuelle)
+            if (journalFromLigne === 'BQ') {
+              ecrituresGroupe = toutesEcritures.filter((e: any) => {
+                if (!e.date) return false;
+                const moisEcriture = e.date.substring(0, 7);
+                return e.journal === 'BQ' && moisEcriture === moisFromLigne;
+              });
+            } else {
+              // Pour les autres journaux : grouper par piece_ref + date
+              ecrituresGroupe = toutesEcritures.filter((e: any) => {
+                if (!e.date) return false;
+                const ref = e.pieceRef || e.piece_ref;
+                return ref === pieceRefFromLigne && e.date === dateFromLigne;
+              });
+            }
           }
 
           if (ecrituresGroupe.length === 0) {
