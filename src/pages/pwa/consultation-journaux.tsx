@@ -195,6 +195,12 @@ export default function JournauxPWA() {
       return true;
     });
 
+    console.log('getMoisExercice - Journal:', selectedJournal, 'Exercice:', selectedExerciceId);
+    console.log('Écritures filtrées:', ecrituresJournal.length);
+    if (ecrituresJournal.length > 0) {
+      console.log('Exemple:', ecrituresJournal[0]);
+    }
+
     // Extraire les mois uniques avec leurs écritures
     const moisSet = new Set<string>();
     ecrituresJournal.forEach((e: any) => {
