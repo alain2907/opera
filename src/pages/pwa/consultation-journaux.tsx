@@ -140,8 +140,16 @@ export default function JournauxPWA() {
   }, [selectedJournal]);
 
   useEffect(() => {
+    console.log('🔄 Check loading:', { selectedEntrepriseId, selectedJournal, selectedMonth });
     if (selectedEntrepriseId && selectedJournal && selectedMonth) {
+      console.log('✅ Loading écritures...');
       loadEcritures();
+    } else {
+      console.log('❌ Not loading - missing:', {
+        entreprise: !selectedEntrepriseId,
+        journal: !selectedJournal,
+        month: !selectedMonth
+      });
     }
   }, [selectedEntrepriseId, selectedExerciceId, selectedJournal, selectedMonth]);
 
