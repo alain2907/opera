@@ -91,10 +91,6 @@ export default function JournauxPWA() {
       if (exerciceEnCours) {
         setSelectedExerciceId(exerciceEnCours.id);
       }
-
-      // Définir le mois courant par défaut
-      const now = new Date();
-      setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
     } catch (error) {
       console.error('Erreur chargement données initiales:', error);
     }
