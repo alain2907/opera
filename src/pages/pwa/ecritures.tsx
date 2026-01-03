@@ -272,12 +272,14 @@ export default function SaisiePWA() {
           setSaisieMonth(dateEcritureFormatee.slice(0, 7));
 
           // 4. Convertir toutes les lignes ET stocker les lignes originales avec leurs IDs
+          console.log('Écritures chargées:', ecrituresGroupe);
           const lignesChargees = ecrituresGroupe.map((e: any) => ({
             numero_compte: e.compteNumero || e.compte_numero || '',
             libelle_compte: e.libelle || '',
             debit: Number(e.debit || 0),
             credit: Number(e.credit || 0),
           }));
+          console.log('Lignes converties:', lignesChargees);
 
           setLignes(lignesChargees);
           setLignesOriginales(ecrituresGroupe); // Garder les lignes originales avec leurs IDs
