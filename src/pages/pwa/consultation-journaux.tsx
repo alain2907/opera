@@ -328,6 +328,8 @@ export default function JournauxPWA() {
   const journalLibelle = JOURNAUX_LABELS[selectedJournal] || selectedJournal;
   const moisDisponibles = getMoisExercice();
 
+  console.log('📅 Render - selectedMonth:', selectedMonth, 'moisDisponibles:', moisDisponibles.map(m => m.value));
+
   // Obtenir la liste des journaux qui ont des écritures
   const journauxDisponibles = Array.from(new Set(toutesEcritures.map((e: any) => e.journal).filter(Boolean)))
     .sort()
