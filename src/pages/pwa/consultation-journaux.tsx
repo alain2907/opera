@@ -116,6 +116,8 @@ export default function JournauxPWA() {
     setLoading(true);
     try {
       const allEcritures = await getAllEcritures();
+      console.log('Toutes les écritures:', allEcritures.length);
+      console.log('Filtres:', { selectedJournal, selectedMonth, selectedExerciceId });
 
       // Filtrer par journal et mois
       const filtered = allEcritures.filter((e: any) => {
@@ -137,6 +139,11 @@ export default function JournauxPWA() {
 
         return true;
       });
+
+      console.log('Écritures filtrées:', filtered.length);
+      if (filtered.length > 0) {
+        console.log('Première écriture:', filtered[0]);
+      }
 
       // Trier par date puis par piece_ref
       filtered.sort((a: any, b: any) => {
