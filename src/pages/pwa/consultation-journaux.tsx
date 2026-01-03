@@ -98,9 +98,9 @@ export default function JournauxPWA() {
     }
   }, [router.isReady, router.query]);
 
-  // Réinitialiser l'exercice quand on change d'entreprise
+  // Réinitialiser l'exercice quand on change d'entreprise (sauf si venant de l'URL)
   useEffect(() => {
-    if (selectedEntrepriseId) {
+    if (selectedEntrepriseId && !fromUrlParams) {
       const exercicesEntreprise = exercices.filter(ex => (ex.entrepriseId || ex.entreprise_id) === selectedEntrepriseId);
       const exerciceEnCours = exercicesEntreprise.find((ex: any) => !ex.cloture);
       if (exerciceEnCours) {
