@@ -195,15 +195,18 @@ export default function JournauxPWA() {
   };
 
   const loadEcritures = async () => {
+    console.log('📥 loadEcritures called with:', { selectedEntrepriseId, selectedExerciceId, selectedJournal, selectedMonth });
     setLoading(true);
     try {
       const allEcritures = await getAllEcritures();
+      console.log('📊 Total écritures:', allEcritures.length);
 
       // Obtenir les IDs des exercices de l'entreprise sélectionnée
       const exercicesEntreprise = selectedEntrepriseId
         ? exercices.filter(ex => (ex.entrepriseId || ex.entreprise_id) === selectedEntrepriseId)
         : exercices;
       const exerciceIds = exercicesEntreprise.map(ex => ex.id);
+      console.log('🏢 Exercice IDs de l\'entreprise:', exerciceIds);
 
       // Filtrer par journal et mois
       const filtered = allEcritures.filter((e: any) => {
@@ -227,6 +230,8 @@ export default function JournauxPWA() {
         return true;
       });
 
+      console.log('✅ Écritures filtrées:', filtered.length);
+
       // Trier par date puis par piece_ref
       filtered.sort((a: any, b: any) => {
         const dateA = a.date || '';
@@ -239,8 +244,9 @@ export default function JournauxPWA() {
       });
 
       setEcritures(filtered);
+      console.log('💾 Écritures set in state');
     } catch (error) {
-      console.error('Erreur chargement écritures:', error);
+      console.error('❌ Erreur chargement écritures:', error);
     } finally {
       setLoading(false);
     }
