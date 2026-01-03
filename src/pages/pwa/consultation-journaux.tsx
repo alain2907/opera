@@ -80,7 +80,6 @@ export default function JournauxPWA() {
 
     if (entreprise || exercice || journal || month) {
       setFromUrlParams(true);
-      initialLoadRef.current = false; // Désactiver la protection après le premier chargement
       if (entreprise) {
         console.log('✅ Setting entreprise:', Number(entreprise));
         setSelectedEntrepriseId(Number(entreprise));
@@ -97,6 +96,11 @@ export default function JournauxPWA() {
         console.log('✅ Setting month:', month);
         setSelectedMonth(month as string);
       }
+      // Désactiver la protection après que les états soient définis
+      setTimeout(() => {
+        console.log('⏰ Désactivation de la protection initialLoad');
+        initialLoadRef.current = false;
+      }, 100);
     } else {
       // Pas de paramètres URL, désactiver la protection
       initialLoadRef.current = false;
