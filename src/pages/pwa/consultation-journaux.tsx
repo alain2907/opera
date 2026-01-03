@@ -114,9 +114,14 @@ export default function JournauxPWA() {
     }
   }, [selectedEntrepriseId, exercices]);
 
-  // Réinitialiser le mois quand on change de journal (sauf si venant de l'URL)
+  // Réinitialiser le mois quand on change de journal (sauf si venant de l'URL ou si journal vide)
   useEffect(() => {
     console.log('📝 Journal changed, fromUrlParams:', fromUrlParams, 'selectedJournal:', selectedJournal);
+    // Ne pas réinitialiser si journal vide (initialisation) ou si venant de l'URL
+    if (!selectedJournal) {
+      console.log('⏭️ Skipping reset because journal is empty');
+      return;
+    }
     if (!fromUrlParams) {
       console.log('❌ Resetting month because not from URL');
       setSelectedMonth('');
