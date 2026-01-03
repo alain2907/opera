@@ -154,8 +154,36 @@ export default function JournauxPWA() {
     return { totalDebit, totalCredit };
   };
 
+  const getMoisExercice = () => {
+    const exercice = exercices.find(ex => ex.id === selectedExerciceId);
+    if (!exercice) return [];
+
+    const dateDebut = exercice.dateDebut || exercice.date_debut;
+    const dateFin = exercice.dateFin || exercice.date_fin;
+    if (!dateDebut || !dateFin) return [];
+
+    const debut = new Date(dateDebut);
+    const fin = new Date(dateFin);
+    const mois: Array<{ value: string; label: string }> = [];
+
+    let current = new Date(debut.getFullYear(), debut.getMonth(), 1);
+    const end = new Date(fin.getFullYear(), fin.getMonth(), 1);
+
+    while (current <= end) {
+      const year = current.getFullYear();
+      const month = String(current.getMonth() + 1).padStart(2, '0');
+      const value = `${year}-${month}`;
+      const label = current.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      mois.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) });
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    return mois;
+  };
+
   const totaux = getTotaux();
   const journalLibelle = JOURNAUX.find(j => j.code === selectedJournal)?.libelle || selectedJournal;
+  const moisDisponibles = getMoisExercice();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -230,28 +258,18 @@ export default function JournauxPWA() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Mois
               </label>
-              <input
-                type="month"
+              <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                min={(() => {
-                  const exercice = exercices.find(ex => ex.id === selectedExerciceId);
-                  if (exercice) {
-                    const dateDebut = exercice.dateDebut || exercice.date_debut;
-                    if (dateDebut) return dateDebut.substring(0, 7);
-                  }
-                  return undefined;
-                })()}
-                max={(() => {
-                  const exercice = exercices.find(ex => ex.id === selectedExerciceId);
-                  if (exercice) {
-                    const dateFin = exercice.dateFin || exercice.date_fin;
-                    if (dateFin) return dateFin.substring(0, 7);
-                  }
-                  return undefined;
-                })()}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+              >
+                <option value="">Sélectionner un mois...</option>
+                {moisDisponibles.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
