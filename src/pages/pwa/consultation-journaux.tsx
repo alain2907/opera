@@ -22,6 +22,7 @@ interface Exercice {
   dateDebut?: string;
   date_fin?: string;
   dateFin?: string;
+  cloture?: boolean;
 }
 
 interface Ecriture {
@@ -237,6 +238,22 @@ export default function JournauxPWA() {
                 type="month"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
+                min={(() => {
+                  const exercice = exercices.find(ex => ex.id === selectedExerciceId);
+                  if (exercice) {
+                    const dateDebut = exercice.dateDebut || exercice.date_debut;
+                    if (dateDebut) return dateDebut.substring(0, 7);
+                  }
+                  return undefined;
+                })()}
+                max={(() => {
+                  const exercice = exercices.find(ex => ex.id === selectedExerciceId);
+                  if (exercice) {
+                    const dateFin = exercice.dateFin || exercice.date_fin;
+                    if (dateFin) return dateFin.substring(0, 7);
+                  }
+                  return undefined;
+                })()}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
