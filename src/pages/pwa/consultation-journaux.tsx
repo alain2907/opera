@@ -40,14 +40,15 @@ interface Ecriture {
   credit?: number;
 }
 
-const JOURNAUX = [
-  { code: 'AC', libelle: 'Achats' },
-  { code: 'VE', libelle: 'Ventes' },
-  { code: 'BQ', libelle: 'Banque' },
-  { code: 'CA', libelle: 'Caisse' },
-  { code: 'OD', libelle: 'Opérations Diverses' },
-  { code: 'AN', libelle: 'À-nouveaux' },
-];
+const JOURNAUX_LABELS: Record<string, string> = {
+  'AC': 'Achats',
+  'VE': 'Ventes',
+  'BQ': 'Banque',
+  'CA': 'Caisse',
+  'OD': 'Opérations Diverses',
+  'AN': 'À-nouveaux',
+  'HA': 'Honoraires',
+};
 
 export default function JournauxPWA() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function JournauxPWA() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [selectedEntrepriseId, setSelectedEntrepriseId] = useState<number | null>(null);
   const [selectedExerciceId, setSelectedExerciceId] = useState<number | null>(null);
-  const [selectedJournal, setSelectedJournal] = useState<string>('AC');
+  const [selectedJournal, setSelectedJournal] = useState<string>('');
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [ecritures, setEcritures] = useState<Ecriture[]>([]);
   const [toutesEcritures, setToutesEcritures] = useState<any[]>([]);
@@ -117,6 +118,12 @@ export default function JournauxPWA() {
       // Charger toutes les écritures pour le menu des mois
       const allEcritures = await getAllEcritures();
       setToutesEcritures(allEcritures);
+
+      // Sélectionner le premier journal disponible
+      const journauxUniques = Array.from(new Set(allEcritures.map((e: any) => e.journal).filter(Boolean))).sort();
+      if (journauxUniques.length > 0) {
+        setSelectedJournal(journauxUniques[0]);
+      }
     } catch (error) {
       console.error('Erreur chargement données initiales:', error);
     }
@@ -212,8 +219,13 @@ export default function JournauxPWA() {
   };
 
   const totaux = getTotaux();
-  const journalLibelle = JOURNAUX.find(j => j.code === selectedJournal)?.libelle || selectedJournal;
+  const journalLibelle = JOURNAUX_LABELS[selectedJournal] || selectedJournal;
   const moisDisponibles = getMoisExercice();
+
+  // Obtenir la liste des journaux qui ont des écritures
+  const journauxDisponibles = Array.from(new Set(toutesEcritures.map((e: any) => e.journal).filter(Boolean)))
+    .sort()
+    .map(code => ({ code, libelle: JOURNAUX_LABELS[code] || code }));
 
   // Filtrer les exercices par entreprise
   const exercicesFiltres = selectedEntrepriseId
@@ -281,7 +293,7 @@ export default function JournauxPWA() {
                 onChange={(e) => setSelectedJournal(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                {JOURNAUX.map((j) => (
+                {journauxDisponibles.map((j) => (
                   <option key={j.code} value={j.code}>
                     {j.code} - {j.libelle}
                   </option>
