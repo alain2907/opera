@@ -3,14 +3,19 @@ import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { EntrepriseProvider } from '../contexts/EntrepriseContext';
 import { WindowProvider } from '../contexts/WindowContext';
+import { PWAEntrepriseProvider } from '../contexts/PWAEntrepriseContext';
 import WindowContainer from '../components/WindowContainer';
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
-  // Pages PWA : pas de contextes de l'app locale
+  // Pages PWA : avec contexte PWA pour la couleur de fond
   if (router.pathname.startsWith('/pwa') || router.pathname === '/login-firebase') {
-    return <Component {...pageProps} />;
+    return (
+      <PWAEntrepriseProvider>
+        <Component {...pageProps} />
+      </PWAEntrepriseProvider>
+    );
   }
 
   // Pages app locale : avec tous les contextes

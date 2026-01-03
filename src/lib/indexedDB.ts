@@ -27,6 +27,7 @@ interface ComptaDB extends DBSchema {
       regime_fiscal?: string;
       notes?: string;
       actif?: boolean;
+      backgroundColor?: string; // Couleur de fond personnalisée
       createdAt: string;
       updatedAt: string;
     };
