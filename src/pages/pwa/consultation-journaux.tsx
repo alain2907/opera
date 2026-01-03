@@ -118,6 +118,8 @@ export default function JournauxPWA() {
       const allEcritures = await getAllEcritures();
       console.log('Toutes les écritures:', allEcritures.length);
       console.log('Filtres:', { selectedJournal, selectedMonth, selectedExerciceId });
+      console.log('Exemple écriture:', allEcritures[0]);
+      console.log('Journaux présents:', [...new Set(allEcritures.map((e: any) => e.journal))]);
 
       // Filtrer par journal et mois
       const filtered = allEcritures.filter((e: any) => {
