@@ -191,7 +191,18 @@ export default function JournauxPWA() {
   const getTotaux = () => {
     const totalDebit = ecritures.reduce((sum, e) => sum + (Number(e.debit) || 0), 0);
     const totalCredit = ecritures.reduce((sum, e) => sum + (Number(e.credit) || 0), 0);
-    return { totalDebit, totalCredit };
+
+    // Compter le nombre d'écritures (groupées par date + N° pièce)
+    const ecrituresUniques = new Set<string>();
+    ecritures.forEach((e: any) => {
+      const pieceRef = e.pieceRef || e.piece_ref || '';
+      const date = e.date || '';
+      const key = `${date}|${pieceRef}`;
+      ecrituresUniques.add(key);
+    });
+    const nombreEcritures = ecrituresUniques.size;
+
+    return { totalDebit, totalCredit, nombreEcritures };
   };
 
   const getMoisExercice = () => {
@@ -344,7 +355,7 @@ export default function JournauxPWA() {
           <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600">Nombre d'écritures</p>
-              <p className="text-2xl font-bold text-blue-600">{ecritures.length}</p>
+              <p className="text-2xl font-bold text-blue-600">{totaux.nombreEcritures}</p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600">Total Débit</p>
