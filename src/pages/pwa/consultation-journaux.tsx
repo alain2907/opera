@@ -58,6 +58,7 @@ export default function JournauxPWA() {
   const [selectedJournal, setSelectedJournal] = useState<string>('AC');
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [ecritures, setEcritures] = useState<Ecriture[]>([]);
+  const [toutesEcritures, setToutesEcritures] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -79,6 +80,11 @@ export default function JournauxPWA() {
       setSelectedMonth(''); // Réinitialiser le mois aussi
     }
   }, [selectedEntrepriseId, exercices]);
+
+  // Réinitialiser le mois quand on change de journal
+  useEffect(() => {
+    setSelectedMonth('');
+  }, [selectedJournal]);
 
   useEffect(() => {
     if (selectedEntrepriseId && selectedJournal && selectedMonth) {
@@ -107,6 +113,10 @@ export default function JournauxPWA() {
       if (exerciceEnCours) {
         setSelectedExerciceId(exerciceEnCours.id);
       }
+
+      // Charger toutes les écritures pour le menu des mois
+      const allEcritures = await getAllEcritures();
+      setToutesEcritures(allEcritures);
     } catch (error) {
       console.error('Erreur chargement données initiales:', error);
     }
@@ -116,15 +126,6 @@ export default function JournauxPWA() {
     setLoading(true);
     try {
       const allEcritures = await getAllEcritures();
-      console.log('Toutes les écritures:', allEcritures.length);
-      console.log('Filtres:', { selectedJournal, selectedMonth, selectedExerciceId });
-      console.log('Exemple écriture:', allEcritures[0]);
-      console.log('Journaux présents:', [...new Set(allEcritures.map((e: any) => e.journal))]);
-
-      // Debug: afficher les mois disponibles pour le journal sélectionné
-      const ecrituresJournal = allEcritures.filter((e: any) => e.journal === selectedJournal);
-      const moisJournal = [...new Set(ecrituresJournal.map((e: any) => e.date ? e.date.substring(0, 7) : ''))];
-      console.log(`Mois disponibles pour ${selectedJournal}:`, moisJournal.sort());
 
       // Filtrer par journal et mois
       const filtered = allEcritures.filter((e: any) => {
@@ -146,11 +147,6 @@ export default function JournauxPWA() {
 
         return true;
       });
-
-      console.log('Écritures filtrées:', filtered.length);
-      if (filtered.length > 0) {
-        console.log('Première écriture:', filtered[0]);
-      }
 
       // Trier par date puis par piece_ref
       filtered.sort((a: any, b: any) => {
@@ -185,30 +181,34 @@ export default function JournauxPWA() {
   };
 
   const getMoisExercice = () => {
-    const exercice = exercices.find(ex => ex.id === selectedExerciceId);
-    if (!exercice) return [];
+    // Filtrer les écritures par journal et exercice
+    const ecrituresJournal = toutesEcritures.filter((e: any) => {
+      if (e.journal !== selectedJournal) return false;
+      if (selectedExerciceId && (e.exerciceId || e.exercice_id) !== selectedExerciceId) return false;
+      return true;
+    });
 
-    const dateDebut = exercice.dateDebut || exercice.date_debut;
-    const dateFin = exercice.dateFin || exercice.date_fin;
-    if (!dateDebut || !dateFin) return [];
+    // Extraire les mois uniques avec leurs écritures
+    const moisSet = new Set<string>();
+    ecrituresJournal.forEach((e: any) => {
+      if (e.date) {
+        moisSet.add(e.date.substring(0, 7));
+      }
+    });
 
-    const debut = new Date(dateDebut);
-    const fin = new Date(dateFin);
-    const mois: Array<{ value: string; label: string }> = [];
+    // Convertir en tableau et trier
+    const moisArray = Array.from(moisSet).sort();
 
-    let current = new Date(debut.getFullYear(), debut.getMonth(), 1);
-    const end = new Date(fin.getFullYear(), fin.getMonth(), 1);
-
-    while (current <= end) {
-      const year = current.getFullYear();
-      const month = String(current.getMonth() + 1).padStart(2, '0');
-      const value = `${year}-${month}`;
-      const label = current.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-      mois.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) });
-      current.setMonth(current.getMonth() + 1);
-    }
-
-    return mois;
+    // Formater pour le select
+    return moisArray.map(moisValue => {
+      const [year, month] = moisValue.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const label = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      return {
+        value: moisValue,
+        label: label.charAt(0).toUpperCase() + label.slice(1)
+      };
+    });
   };
 
   const totaux = getTotaux();
