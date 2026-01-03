@@ -1,0 +1,246 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import PWANavbar from '../../components/PWANavbar';
+import {
+  getAllEcritures,
+  getAllExercices,
+  getAllEntreprises,
+} from '../../lib/storageAdapter';
+
+interface Ecriture {
+  id: number;
+  date: string;
+  journal: string;
+  pieceRef?: string;
+  piece_ref?: string;
+  libelle: string;
+  debit?: number;
+  credit?: number;
+  compteNumero?: string;
+  compte_numero?: string;
+  exerciceId?: number;
+  exercice_id?: number;
+}
+
+export default function ExtraitComptePWA() {
+  const router = useRouter();
+  const { compte, exercice: exerciceParam } = router.query;
+
+  const [ecritures, setEcritures] = useState<Ecriture[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [nomCompte, setNomCompte] = useState('');
+  const [solde, setSolde] = useState(0);
+  const [entreprises, setEntreprises] = useState<any[]>([]);
+  const [exercices, setExercices] = useState<any[]>([]);
+  const [selectedExerciceId, setSelectedExerciceId] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (compte && router.isReady) {
+      if (exerciceParam) {
+        setSelectedExerciceId(Number(exerciceParam));
+      }
+      loadEcritures();
+    }
+  }, [compte, selectedExerciceId, router.isReady]);
+
+  async function loadData() {
+    const [entData, exData] = await Promise.all([
+      getAllEntreprises(),
+      getAllExercices()
+    ]);
+    setEntreprises(entData);
+    setExercices(exData);
+  }
+
+  async function loadEcritures() {
+    if (!compte) return;
+
+    setLoading(true);
+    try {
+      const allEcritures = await getAllEcritures();
+
+      // Filtrer par compte
+      let filtered = allEcritures.filter((e: Ecriture) => {
+        const compteNumero = e.compteNumero || e.compte_numero;
+        return compteNumero === compte;
+      });
+
+      // Filtrer par exercice si sélectionné
+      if (selectedExerciceId) {
+        filtered = filtered.filter((e: Ecriture) => {
+          const exId = e.exerciceId || e.exercice_id;
+          return exId === selectedExerciceId;
+        });
+      }
+
+      // Trier par date
+      filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Calculer solde progressif
+      let soldeProgressif = 0;
+      const ecrituresAvecSolde = filtered.map((e) => {
+        soldeProgressif += (e.debit || 0) - (e.credit || 0);
+        return {
+          ...e,
+          soldeProgressif
+        };
+      });
+
+      setEcritures(ecrituresAvecSolde as any);
+      setSolde(soldeProgressif);
+
+      // Récupérer le nom du compte depuis la première écriture
+      if (filtered.length > 0) {
+        setNomCompte(router.query.nom as string || compte as string);
+      }
+    } catch (error) {
+      console.error('Erreur chargement écritures:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function formatMontant(montant: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(montant);
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <PWANavbar />
+
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          {/* En-tête */}
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-600 mb-2">
+                📖 Extrait de compte {compte}
+              </h1>
+              <p className="text-gray-600">{nomCompte}</p>
+            </div>
+            <button
+              onClick={() => router.back()}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              ← Retour
+            </button>
+          </div>
+
+          {/* Filtres */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Exercice
+              </label>
+              <select
+                value={selectedExerciceId || ''}
+                onChange={(e) => setSelectedExerciceId(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tous les exercices</option>
+                {exercices.map((ex) => (
+                  <option key={ex.id} value={ex.id}>
+                    {ex.annee} {ex.cloture ? '(Clôturé)' : '(En cours)'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-2 flex items-end">
+              <div className="bg-blue-50 p-4 rounded-lg w-full">
+                <p className="text-sm text-gray-600">Solde au {new Date().toLocaleDateString('fr-FR')}</p>
+                <p className={`text-2xl font-bold ${solde >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatMontant(Math.abs(solde))} € {solde >= 0 ? 'Débiteur' : 'Créditeur'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Chargement...</p>
+            </div>
+          ) : ecritures.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Aucune écriture trouvée pour ce compte</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Journal</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">N° Pièce</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Libellé</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold">Débit</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold">Crédit</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold">Solde</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {ecritures.map((ecriture: any, index) => (
+                    <tr
+                      key={ecriture.id || index}
+                      className="hover:bg-blue-50 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/pwa/ecritures?id=${ecriture.id}`)}
+                    >
+                      <td className="px-4 py-3 text-sm">
+                        {new Date(ecriture.date).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-mono">
+                        {ecriture.journal}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-mono">
+                        {ecriture.pieceRef || ecriture.piece_ref || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {ecriture.libelle}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-mono text-green-700">
+                        {ecriture.debit ? formatMontant(ecriture.debit) : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-mono text-red-700">
+                        {ecriture.credit ? formatMontant(ecriture.credit) : '-'}
+                      </td>
+                      <td className={`px-4 py-3 text-sm text-right font-mono font-semibold ${
+                        ecriture.soldeProgressif >= 0 ? 'text-green-700' : 'text-red-700'
+                      }`}>
+                        {formatMontant(Math.abs(ecriture.soldeProgressif))} {ecriture.soldeProgressif >= 0 ? 'D' : 'C'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Total */}
+          {ecritures.length > 0 && (
+            <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between items-center">
+                <p className="text-lg font-semibold text-gray-700">
+                  {ecritures.length} écriture(s)
+                </p>
+                <p className="text-lg font-semibold text-gray-700">
+                  Solde final : <span className={solde >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    {formatMontant(Math.abs(solde))} € {solde >= 0 ? 'Débiteur' : 'Créditeur'}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

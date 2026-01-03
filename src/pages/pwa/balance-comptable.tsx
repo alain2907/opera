@@ -723,8 +723,8 @@ export default function BalanceComptablePWA() {
                     <tr
                       key={ligne.numero_compte}
                       className="hover:bg-blue-50 transition-colors cursor-pointer"
-                      onClick={() => chargerGrandLivreCompte(ligne.numero_compte, ligne.nom_compte)}
-                      title="Cliquer pour voir le grand-livre du compte"
+                      onClick={() => router.push(`/pwa/extrait-compte?compte=${ligne.numero_compte}&nom=${encodeURIComponent(ligne.nom_compte)}&exercice=${exerciceId || ''}`)}
+                      title="Cliquer pour voir l'extrait du compte"
                     >
                       <td className="px-4 py-3 text-sm font-mono font-semibold text-blue-600">
                         {ligne.numero_compte}
