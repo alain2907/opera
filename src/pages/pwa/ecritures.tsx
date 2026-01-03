@@ -224,10 +224,12 @@ export default function SaisiePWA() {
 
           const pieceRefFromLigne = ligneRef.pieceRef || ligneRef.piece_ref;
           const dateFromLigne = ligneRef.date;
+          const journalFromLigne = ligneRef.journal;
+          const moisFromLigne = dateFromLigne.substring(0, 7); // AAAA-MM
 
           // 2. Charger toutes les lignes de la même écriture (même piece_ref ET même date)
           const toutesEcritures = await getAllEcritures();
-          const ecrituresGroupe = toutesEcritures.filter((e: any) => {
+          let ecrituresGroupe = toutesEcritures.filter((e: any) => {
             const ref = e.pieceRef || e.piece_ref;
             return ref === pieceRefFromLigne && e.date === dateFromLigne;
           });
@@ -235,6 +237,19 @@ export default function SaisiePWA() {
           if (ecrituresGroupe.length === 0) {
             setError(`Écriture complète introuvable`);
             return;
+          }
+
+          // Vérifier si l'écriture est équilibrée
+          const totalDebit = ecrituresGroupe.reduce((sum, e) => sum + (Number(e.debit) || 0), 0);
+          const totalCredit = ecrituresGroupe.reduce((sum, e) => sum + (Number(e.credit) || 0), 0);
+          const equilibree = Math.abs(totalDebit - totalCredit) < 0.01;
+
+          // Si déséquilibrée ET journal de banque, charger toutes les lignes du mois (écriture mensuelle avec équilibrage final)
+          if (!equilibree && journalFromLigne === 'BQ') {
+            ecrituresGroupe = toutesEcritures.filter((e: any) => {
+              const moisEcriture = e.date.substring(0, 7);
+              return e.journal === 'BQ' && moisEcriture === moisFromLigne;
+            });
           }
 
           // 3. Préparer le formulaire avec les données de la première ligne
