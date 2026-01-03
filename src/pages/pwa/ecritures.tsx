@@ -258,8 +258,13 @@ export default function SaisiePWA() {
 
           // 3. Préparer le formulaire avec les données de la première ligne
           const premiere = ecrituresGroupe[0];
-          const journalId = premiere.journalId || premiere.journal_id;
           const exerciceId = premiere.exerciceId || premiere.exercice_id;
+
+          // Mapper le code journal vers l'ID
+          const JOURNAL_CODE_TO_ID: Record<string, number> = {
+            'AC': 1, 'VE': 2, 'BQ': 3, 'CA': 4, 'OD': 5, 'AN': 6
+          };
+          const journalId = JOURNAL_CODE_TO_ID[journalFromLigne] || 1;
 
           // Pour les écritures de banque, ne pas utiliser la date de la ligne cliquée
           // car chaque ligne a sa propre date
@@ -268,7 +273,7 @@ export default function SaisiePWA() {
             : dateFromLigne.split('T')[0];
 
           const formDataUpdated = {
-            journal_id: journalId || 1,
+            journal_id: journalId,
             exercice_id: exerciceId || selectedExerciceId || 1,
             date_ecriture: dateEcritureFormatee,
             numero_piece: pieceRefFromLigne,
