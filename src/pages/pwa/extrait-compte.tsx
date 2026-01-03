@@ -188,11 +188,19 @@ export default function ExtraitComptePWA() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {ecritures.map((ecriture: any, index) => (
+                  {ecritures.map((ecriture: any, index) => {
+                    // Extraire le mois de la date de l'écriture
+                    const moisEcriture = ecriture.date ? ecriture.date.substring(0, 7) : '';
+                    const journal = ecriture.journal || '';
+
+                    return (
                     <tr
                       key={ecriture.id || index}
                       className="hover:bg-blue-50 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/pwa/ecritures?id=${ecriture.id}`)}
+                      onClick={() => {
+                        // Rediriger vers consultation-journaux avec les filtres appropriés
+                        router.push(`/pwa/consultation-journaux?journal=${journal}&month=${moisEcriture}`);
+                      }}
                     >
                       <td className="px-4 py-3 text-sm">
                         {new Date(ecriture.date).toLocaleDateString('fr-FR')}
@@ -218,7 +226,8 @@ export default function ExtraitComptePWA() {
                         {formatMontant(Math.abs(ecriture.soldeProgressif))} {ecriture.soldeProgressif >= 0 ? 'D' : 'C'}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

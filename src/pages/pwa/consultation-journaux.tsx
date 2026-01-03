@@ -69,6 +69,14 @@ export default function JournauxPWA() {
     loadInitialData();
   }, []);
 
+  // Charger depuis les paramètres URL
+  useEffect(() => {
+    if (router.query.journal && router.query.month) {
+      setSelectedJournal(router.query.journal as string);
+      setSelectedMonth(router.query.month as string);
+    }
+  }, [router.query]);
+
   // Réinitialiser l'exercice quand on change d'entreprise
   useEffect(() => {
     if (selectedEntrepriseId) {
