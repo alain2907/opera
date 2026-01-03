@@ -294,6 +294,7 @@ export default function SaisiePWA() {
             credit: Number(e.credit || 0),
             date: e.date, // Garder la date de chaque ligne
             piece_ref: journalFromLigne === 'BQ' ? (e.pieceRef || e.piece_ref) : undefined, // Garder le N° pièce pour les écritures de banque
+            numeroEcriture: e.numeroEcriture, // Garder le numéro d'écriture
           }));
           console.log('🔍 DEBUG lignesChargees:', lignesChargees.map(l => ({ date: l.date, libelle: l.libelle_compte })));
 
@@ -1296,6 +1297,7 @@ export default function SaisiePWA() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100 border-b-2 border-gray-300">
+                    <th className="p-2 text-left text-xs font-semibold">N° Écriture</th>
                     <th className="p-2 text-left text-xs font-semibold">Date</th>
                     <th className="p-2 text-left text-xs font-semibold">Compte</th>
                     <th className="p-2 text-left text-xs font-semibold">N° Pièce</th>
@@ -1308,6 +1310,9 @@ export default function SaisiePWA() {
                 <tbody>
                   {lignes.map((ligne, index) => (
                     <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="p-1 text-xs text-gray-600 font-mono">
+                        {(ligne as any).numeroEcriture || '-'}
+                      </td>
                       <td className="p-1">
                         <input
                           type="date"
