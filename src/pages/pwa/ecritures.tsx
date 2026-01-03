@@ -217,7 +217,6 @@ export default function SaisiePWA() {
         try {
           // 1. Charger la ligne de référence
           const ligneRef = await getEcriture(Number(ligneId));
-          console.log('Ligne de référence chargée:', ligneRef);
 
           if (!ligneRef) {
             setError(`Ligne #${ligneId} introuvable`);
@@ -226,7 +225,6 @@ export default function SaisiePWA() {
 
           if (!ligneRef.date) {
             setError(`La ligne #${ligneId} n'a pas de date`);
-            console.error('Ligne sans date:', ligneRef);
             return;
           }
 
@@ -286,6 +284,8 @@ export default function SaisiePWA() {
             libelle_compte: e.libelle || '',
             debit: Number(e.debit || 0),
             credit: Number(e.credit || 0),
+            date: journalFromLigne === 'BQ' ? e.date : undefined, // Garder la date pour les écritures de banque
+            piece_ref: journalFromLigne === 'BQ' ? (e.pieceRef || e.piece_ref) : undefined, // Garder le N° pièce pour les écritures de banque
           }));
 
           setLignes(lignesChargees);
@@ -511,9 +511,9 @@ export default function SaisiePWA() {
 
           const ligneData = {
             exerciceId: formData.exercice_id,
-            date: formData.date_ecriture,
+            date: ligneActuelle.date || formData.date_ecriture, // Utiliser la date de la ligne si présente (écriture de banque)
             journal: journalCode,
-            pieceRef: formData.numero_piece,
+            pieceRef: ligneActuelle.piece_ref || formData.numero_piece, // Utiliser le N° pièce de la ligne si présent (écriture de banque)
             compteNumero: ligneActuelle.numero_compte,
             libelle: ligneActuelle.libelle_compte,
             debit: Number(ligneActuelle.debit),
@@ -1302,8 +1302,18 @@ export default function SaisiePWA() {
                       <td className="p-1">
                         <input
                           type="date"
-                          value={formData.date_ecriture}
-                          onChange={(e) => setFormData({ ...formData, date_ecriture: e.target.value })}
+                          value={ligne.date ? ligne.date.split('T')[0] : formData.date_ecriture}
+                          onChange={(e) => {
+                            if (ligne.date) {
+                              // Pour les écritures de banque : modifier la date de la ligne
+                              const newLignes = [...lignes];
+                              newLignes[index] = { ...newLignes[index], date: e.target.value };
+                              setLignes(newLignes);
+                            } else {
+                              // Pour les autres : modifier la date de l'écriture
+                              setFormData({ ...formData, date_ecriture: e.target.value });
+                            }
+                          }}
                           disabled={!!editingEcriture}
                           className="w-full px-2 py-1 border border-gray-300 rounded text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                         />
@@ -1357,9 +1367,20 @@ export default function SaisiePWA() {
                         <input
                           type="text"
                           placeholder="Auto"
-                          value={formData.numero_piece}
-                          onChange={(e) => setFormData({ ...formData, numero_piece: e.target.value })}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
+                          value={ligne.piece_ref || formData.numero_piece}
+                          onChange={(e) => {
+                            if (ligne.piece_ref !== undefined) {
+                              // Pour les écritures de banque : modifier le N° pièce de la ligne
+                              const newLignes = [...lignes];
+                              newLignes[index] = { ...newLignes[index], piece_ref: e.target.value };
+                              setLignes(newLignes);
+                            } else {
+                              // Pour les autres : modifier le N° pièce de l'écriture
+                              setFormData({ ...formData, numero_piece: e.target.value });
+                            }
+                          }}
+                          disabled={!!editingEcriture && !ligne.piece_ref}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50 disabled:cursor-not-allowed"
                         />
                       </td>
                       <td className="p-1">

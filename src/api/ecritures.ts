@@ -6,6 +6,8 @@ export interface LigneEcriture {
   libelle_compte: string;
   debit: number;
   credit: number;
+  date?: string; // Date spécifique pour les écritures de banque mensuelles
+  piece_ref?: string; // N° pièce spécifique pour les écritures de banque mensuelles
 }
 
 export interface Ecriture {
