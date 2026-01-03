@@ -327,17 +327,26 @@ export default function SaisiePWA() {
 
           // Prendre la première écriture pour les infos communes
           const premiere = ecrituresGroupe[0];
-          const journalId = premiere.journalId || premiere.journal_id;
           const exerciceId = premiere.exerciceId || premiere.exercice_id;
           const date = premiere.date;
+          const journalFromLigne = premiere.journal;
+
+          // Mapper le code journal vers l'ID
+          const JOURNAL_CODE_TO_ID: Record<string, number> = {
+            'AC': 1, 'VE': 2, 'BQ': 3, 'CA': 4, 'OD': 5, 'AN': 6
+          };
+          const journalId = JOURNAL_CODE_TO_ID[journalFromLigne] || 1;
 
           setFormData({
-            journal_id: journalId || 1,
+            journal_id: journalId,
             exercice_id: exerciceId || selectedExerciceId || 1,
             date_ecriture: date.split('T')[0],
             numero_piece: pieceRef,
             libelle: premiere.libelle || '',
           });
+
+          // Synchroniser le mois de saisie
+          setSaisieMonth(date.substring(0, 7));
 
           // Convertir toutes les écritures en lignes
           const lignesChargees = ecrituresGroupe.map((e: any) => ({
@@ -345,9 +354,14 @@ export default function SaisiePWA() {
             libelle_compte: e.libelle || '',
             debit: Number(e.debit || 0),
             credit: Number(e.credit || 0),
+            date: e.date,
+            piece_ref: e.pieceRef || e.piece_ref,
+            numeroEcriture: e.numeroEcriture,
           }));
 
           setLignes(lignesChargees);
+          setLignesOriginales(ecrituresGroupe);
+          setEditingEcriture({ id: premiere.id, ...formData, lignes: lignesChargees });
           setSuccess(`Écriture ${pieceRef} chargée pour modification`);
         } catch (err) {
           console.error('Erreur chargement écriture par piece:', err);
