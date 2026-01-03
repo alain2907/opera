@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import PWANavbar from '../../components/PWANavbar';
 import {
@@ -65,6 +65,7 @@ export default function JournauxPWA() {
   const [migrating, setMigrating] = useState(false);
   const [migrationResult, setMigrationResult] = useState<string | null>(null);
   const [fromUrlParams, setFromUrlParams] = useState(false);
+  const initialLoadRef = useRef(true);
 
   useEffect(() => {
     loadInitialData();
@@ -79,6 +80,7 @@ export default function JournauxPWA() {
 
     if (entreprise || exercice || journal || month) {
       setFromUrlParams(true);
+      initialLoadRef.current = false; // Désactiver la protection après le premier chargement
       if (entreprise) {
         console.log('✅ Setting entreprise:', Number(entreprise));
         setSelectedEntrepriseId(Number(entreprise));
@@ -95,6 +97,9 @@ export default function JournauxPWA() {
         console.log('✅ Setting month:', month);
         setSelectedMonth(month as string);
       }
+    } else {
+      // Pas de paramètres URL, désactiver la protection
+      initialLoadRef.current = false;
     }
   }, [router.isReady, router.query]);
 
@@ -114,21 +119,20 @@ export default function JournauxPWA() {
     }
   }, [selectedEntrepriseId, exercices]);
 
-  // Réinitialiser le mois quand on change de journal (sauf si venant de l'URL ou si journal vide)
+  // Réinitialiser le mois quand on change de journal (sauf si chargement initial ou si journal vide)
   useEffect(() => {
-    console.log('📝 Journal changed, fromUrlParams:', fromUrlParams, 'selectedJournal:', selectedJournal);
-    // Ne pas réinitialiser si journal vide (initialisation) ou si venant de l'URL
+    console.log('📝 Journal changed, initialLoad:', initialLoadRef.current, 'selectedJournal:', selectedJournal);
+    // Ne pas réinitialiser si journal vide (initialisation) ou pendant le chargement initial
     if (!selectedJournal) {
       console.log('⏭️ Skipping reset because journal is empty');
       return;
     }
-    if (!fromUrlParams) {
-      console.log('❌ Resetting month because not from URL');
-      setSelectedMonth('');
-    } else {
-      console.log('✅ Preserving month from URL');
-      setFromUrlParams(false); // Reset du flag après première utilisation
+    if (initialLoadRef.current) {
+      console.log('⏭️ Skipping reset because initial load');
+      return;
     }
+    console.log('❌ Resetting month because user changed journal');
+    setSelectedMonth('');
   }, [selectedJournal]);
 
   useEffect(() => {
