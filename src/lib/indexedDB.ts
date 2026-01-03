@@ -50,6 +50,7 @@ interface ComptaDB extends DBSchema {
     key: number;
     value: {
       id: number;
+      numeroEcriture?: string; // Numéro unique de l'écriture (partagé par toutes les lignes d'une même écriture)
       exerciceId: number;
       date: string;
       journal: string;

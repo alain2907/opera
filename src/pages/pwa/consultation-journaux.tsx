@@ -392,6 +392,7 @@ export default function JournauxPWA() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                    <th className="px-4 py-3 text-left text-sm font-semibold">N° Écriture</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Date</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">N° Pièce</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Compte</th>
@@ -407,6 +408,9 @@ export default function JournauxPWA() {
                       className="hover:bg-blue-50 transition-colors cursor-pointer"
                       onClick={() => router.push(`/pwa/ecritures?id=${ecriture.id}`)}
                     >
+                      <td className="px-4 py-3 text-sm font-mono text-blue-600">
+                        {ecriture.numeroEcriture || `#${ecriture.id}`}
+                      </td>
                       <td className="px-4 py-3 text-sm">
                         {new Date(ecriture.date).toLocaleDateString('fr-FR')}
                       </td>
@@ -430,7 +434,7 @@ export default function JournauxPWA() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-gray-100 font-bold">
-                    <td colSpan={4} className="px-4 py-3 text-sm text-right">
+                    <td colSpan={5} className="px-4 py-3 text-sm text-right">
                       TOTAUX
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-mono text-green-700">

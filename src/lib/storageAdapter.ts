@@ -160,7 +160,54 @@ export async function createEcriture(data: any) {
   if (mode === 'local') {
     return localApiPost<any>('/ecritures', data);
   } else {
-    return indexedDB.createEcriture(data);
+    // Mode PWA : gérer les lignes multiples
+    if (data.lignes && Array.isArray(data.lignes)) {
+      // Générer un numéro d'écriture unique : JOURNAL-AAAA-MM-NNNN
+      // Mapping hardcodé des journaux (même que dans ecritures.tsx)
+      const JOURNAUX_MAP: Record<number, string> = {
+        1: 'AC',
+        2: 'VE',
+        3: 'BQ',
+        4: 'CA',
+        5: 'OD',
+      };
+      const journal = data.journal_id ? JOURNAUX_MAP[data.journal_id] || 'XX' : 'XX';
+      const date = data.date_ecriture || new Date().toISOString().split('T')[0];
+      const [year, month] = date.split('-');
+
+      // Trouver le prochain numéro pour ce journal/mois
+      const allEcritures = await indexedDB.getAllEcritures();
+      const ecrituresMois = allEcritures.filter((e: any) => {
+        if (!e.numeroEcriture) return false;
+        const pattern = `${journal}-${year}-${month}-`;
+        return e.numeroEcriture.startsWith(pattern);
+      });
+      const maxNum = ecrituresMois.reduce((max: number, e: any) => {
+        const num = parseInt(e.numeroEcriture.split('-')[3]) || 0;
+        return Math.max(max, num);
+      }, 0);
+      const numeroEcriture = `${journal}-${year}-${month}-${String(maxNum + 1).padStart(4, '0')}`;
+
+      // Créer toutes les lignes avec le même numeroEcriture
+      for (const ligne of data.lignes) {
+        await indexedDB.createEcriture({
+          numeroEcriture,
+          exerciceId: data.exercice_id,
+          date: data.date_ecriture,
+          journal,
+          pieceRef: data.numero_piece,
+          libelle: ligne.libelle_compte,
+          debit: ligne.debit,
+          credit: ligne.credit,
+          compteNumero: ligne.numero_compte,
+        });
+      }
+
+      return { success: true, numeroEcriture };
+    } else {
+      // Ligne unique (mode édition)
+      return indexedDB.createEcriture(data);
+    }
   }
 }
 
