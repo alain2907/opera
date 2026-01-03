@@ -6,6 +6,7 @@ import {
   getAllExercices,
   getAllEcritures
 } from '../../lib/storageAdapter';
+import { migrateNumeroEcriture } from '../../lib/migrateNumeroEcriture';
 
 interface Entreprise {
   id: number;
@@ -61,6 +62,8 @@ export default function JournauxPWA() {
   const [ecritures, setEcritures] = useState<Ecriture[]>([]);
   const [toutesEcritures, setToutesEcritures] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<string | null>(null);
 
   useEffect(() => {
     loadInitialData();
@@ -181,6 +184,32 @@ export default function JournauxPWA() {
     }
   };
 
+  const handleMigration = async () => {
+    if (!confirm('Voulez-vous migrer toutes les écritures existantes pour générer les numéros d\'écritures ?\n\nCette opération peut prendre quelques secondes.')) {
+      return;
+    }
+
+    setMigrating(true);
+    setMigrationResult(null);
+
+    try {
+      const result = await migrateNumeroEcriture();
+      setMigrationResult(`✅ Migration réussie : ${result.ecritures} écritures, ${result.migrated} lignes mises à jour`);
+
+      // Recharger les données
+      const allEcritures = await getAllEcritures();
+      setToutesEcritures(allEcritures);
+      if (selectedJournal && selectedMonth) {
+        loadEcritures();
+      }
+    } catch (error) {
+      console.error('Erreur migration:', error);
+      setMigrationResult('❌ Erreur lors de la migration');
+    } finally {
+      setMigrating(false);
+    }
+  };
+
   const formatMontant = (montant: number) => {
     return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 2,
@@ -270,12 +299,28 @@ export default function JournauxPWA() {
       <div className="max-w-7xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-xl p-8">
           {/* En-tête */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-blue-600 mb-2">
-              📒 Journaux Comptables
-            </h1>
-            <p className="text-gray-600">Consultation des écritures par journal et par mois</p>
+          <div className="mb-6 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-600 mb-2">
+                📒 Journaux Comptables
+              </h1>
+              <p className="text-gray-600">Consultation des écritures par journal et par mois</p>
+            </div>
+            <button
+              onClick={handleMigration}
+              disabled={migrating}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {migrating ? '⏳ Migration...' : '🔄 Migrer numéros'}
+            </button>
           </div>
+
+          {/* Résultat de migration */}
+          {migrationResult && (
+            <div className={`mb-4 p-4 rounded-lg ${migrationResult.startsWith('✅') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+              {migrationResult}
+            </div>
+          )}
 
           {/* Filtres */}
           <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
