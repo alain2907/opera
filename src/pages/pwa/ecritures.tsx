@@ -286,6 +286,7 @@ export default function SaisiePWA() {
           setSaisieMonth(dateEcritureFormatee.slice(0, 7));
 
           // 4. Convertir toutes les lignes ET stocker les lignes originales avec leurs IDs
+          console.log('🔍 DEBUG ecrituresGroupe:', ecrituresGroupe.map(e => ({ id: e.id, date: e.date, libelle: e.libelle })));
           const lignesChargees = ecrituresGroupe.map((e: any) => ({
             numero_compte: e.compteNumero || e.compte_numero || '',
             libelle_compte: e.libelle || '',
@@ -294,6 +295,7 @@ export default function SaisiePWA() {
             date: e.date, // Garder la date de chaque ligne
             piece_ref: journalFromLigne === 'BQ' ? (e.pieceRef || e.piece_ref) : undefined, // Garder le N° pièce pour les écritures de banque
           }));
+          console.log('🔍 DEBUG lignesChargees:', lignesChargees.map(l => ({ date: l.date, libelle: l.libelle_compte })));
 
           setLignes(lignesChargees);
           setLignesOriginales(ecrituresGroupe); // Garder les lignes originales avec leurs IDs
