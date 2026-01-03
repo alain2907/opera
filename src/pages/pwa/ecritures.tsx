@@ -235,12 +235,14 @@ export default function SaisiePWA() {
           // (chaque ligne a sa propre date et piece_ref, mais elles forment une seule écriture mensuelle)
           if (journalFromLigne === 'BQ') {
             ecrituresGroupe = toutesEcritures.filter((e: any) => {
+              if (!e.date) return false;
               const moisEcriture = e.date.substring(0, 7);
               return e.journal === 'BQ' && moisEcriture === moisFromLigne;
             });
           } else {
             // Pour les autres journaux : grouper par piece_ref + date
             ecrituresGroupe = toutesEcritures.filter((e: any) => {
+              if (!e.date) return false;
               const ref = e.pieceRef || e.piece_ref;
               return ref === pieceRefFromLigne && e.date === dateFromLigne;
             });
