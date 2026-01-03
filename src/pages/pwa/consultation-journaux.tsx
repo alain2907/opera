@@ -134,11 +134,18 @@ export default function JournauxPWA() {
     try {
       const allEcritures = await getAllEcritures();
 
+      // Obtenir les IDs des exercices de l'entreprise sélectionnée
+      const exercicesEntreprise = selectedEntrepriseId
+        ? exercices.filter(ex => (ex.entrepriseId || ex.entreprise_id) === selectedEntrepriseId)
+        : exercices;
+      const exerciceIds = exercicesEntreprise.map(ex => ex.id);
+
       // Filtrer par journal et mois
       const filtered = allEcritures.filter((e: any) => {
         const eJournal = e.journal;
         const eDate = e.date;
         const eMois = eDate ? eDate.substring(0, 7) : '';
+        const eExerciceId = e.exerciceId || e.exercice_id;
 
         // Filtre journal
         if (eJournal !== selectedJournal) return false;
@@ -146,11 +153,11 @@ export default function JournauxPWA() {
         // Filtre mois
         if (eMois !== selectedMonth) return false;
 
-        // Filtre exercice (optionnel)
-        if (selectedExerciceId) {
-          const eExerciceId = e.exerciceId || e.exercice_id;
-          if (eExerciceId !== selectedExerciceId) return false;
-        }
+        // Filtre par exercices de l'entreprise
+        if (selectedEntrepriseId && eExerciceId && !exerciceIds.includes(eExerciceId)) return false;
+
+        // Filtre exercice spécifique (optionnel)
+        if (selectedExerciceId && eExerciceId !== selectedExerciceId) return false;
 
         return true;
       });
@@ -188,18 +195,25 @@ export default function JournauxPWA() {
   };
 
   const getMoisExercice = () => {
-    // Filtrer les écritures par journal et exercice
+    // Obtenir les IDs des exercices de l'entreprise sélectionnée
+    const exercicesEntreprise = selectedEntrepriseId
+      ? exercices.filter(ex => (ex.entrepriseId || ex.entreprise_id) === selectedEntrepriseId)
+      : exercices;
+    const exerciceIds = exercicesEntreprise.map(ex => ex.id);
+
+    // Filtrer les écritures par journal et exercices de l'entreprise
     const ecrituresJournal = toutesEcritures.filter((e: any) => {
       if (e.journal !== selectedJournal) return false;
-      if (selectedExerciceId && (e.exerciceId || e.exercice_id) !== selectedExerciceId) return false;
+
+      // Filtrer par exercices de l'entreprise
+      const eExerciceId = e.exerciceId || e.exercice_id;
+      if (selectedEntrepriseId && eExerciceId && !exerciceIds.includes(eExerciceId)) return false;
+
+      // Si un exercice spécifique est sélectionné, filtrer aussi par celui-ci
+      if (selectedExerciceId && eExerciceId !== selectedExerciceId) return false;
+
       return true;
     });
-
-    console.log('getMoisExercice - Journal:', selectedJournal, 'Exercice:', selectedExerciceId);
-    console.log('Écritures filtrées:', ecrituresJournal.length);
-    if (ecrituresJournal.length > 0) {
-      console.log('Exemple:', ecrituresJournal[0]);
-    }
 
     // Extraire les mois uniques avec leurs écritures
     const moisSet = new Set<string>();
