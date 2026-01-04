@@ -8,6 +8,7 @@ export default function BackupPage() {
   const router = useRouter();
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   async function handleExport() {

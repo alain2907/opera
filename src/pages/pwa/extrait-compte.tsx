@@ -5,6 +5,7 @@ import {
   getAllEcritures,
   getAllExercices,
   getAllEntreprises,
+  getAllComptes,
 } from '../../lib/storageAdapter';
 
 interface Ecriture {
@@ -33,6 +34,7 @@ export default function ExtraitComptePWA() {
   const [entreprises, setEntreprises] = useState<any[]>([]);
   const [exercices, setExercices] = useState<any[]>([]);
   const [selectedExerciceId, setSelectedExerciceId] = useState<number | null>(null);
+  const [comptes, setComptes] = useState<any[]>([]);
 
   useEffect(() => {
     loadData();
@@ -48,12 +50,14 @@ export default function ExtraitComptePWA() {
   }, [compte, selectedExerciceId, router.isReady]);
 
   async function loadData() {
-    const [entData, exData] = await Promise.all([
+    const [entData, exData, comptesData] = await Promise.all([
       getAllEntreprises(),
-      getAllExercices()
+      getAllExercices(),
+      getAllComptes()
     ]);
     setEntreprises(entData);
     setExercices(exData);
+    setComptes(comptesData.sort((a: any, b: any) => a.numero.localeCompare(b.numero)));
   }
 
   async function loadEcritures() {
@@ -125,7 +129,7 @@ export default function ExtraitComptePWA() {
               </h1>
               <p className="text-gray-600 mb-1">{nomCompte}</p>
               {selectedExerciceId && exercices.length > 0 && (
-                <div className="text-sm text-gray-500">
+                <div className="text-lg font-bold text-blue-600">
                   {(() => {
                     const exercice = exercices.find(ex => ex.id === selectedExerciceId);
                     if (!exercice) return null;
@@ -133,9 +137,9 @@ export default function ExtraitComptePWA() {
                     const entreprise = entreprises.find(ent => ent.id === entrepriseId);
                     return (
                       <>
-                        <span className="font-semibold">Entreprise :</span> {entreprise?.raison_sociale || entreprise?.nom || 'N/A'}
+                        Entreprise : {entreprise?.raison_sociale || entreprise?.nom || 'N/A'}
                         {' • '}
-                        <span className="font-semibold">Exercice :</span> {exercice.annee} {exercice.cloture ? '(Clôturé)' : '(En cours)'}
+                        Exercice : {exercice.annee} {exercice.cloture ? '(Clôturé)' : '(En cours)'}
                       </>
                     );
                   })()}
@@ -154,6 +158,30 @@ export default function ExtraitComptePWA() {
           <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Compte
+              </label>
+              <select
+                value={compte || ''}
+                onChange={(e) => {
+                  const nouveauCompte = e.target.value;
+                  const compteData = comptes.find(c => c.numero === nouveauCompte);
+                  if (nouveauCompte) {
+                    router.push(`/pwa/extrait-compte?compte=${nouveauCompte}&nom=${encodeURIComponent(compteData?.nom || nouveauCompte)}&exercice=${selectedExerciceId || ''}`);
+                  }
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono"
+              >
+                <option value="">-- Sélectionner un compte --</option>
+                {comptes.map((c) => (
+                  <option key={c.numero} value={c.numero}>
+                    {c.numero} - {c.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Exercice
               </label>
               <select
@@ -170,7 +198,7 @@ export default function ExtraitComptePWA() {
               </select>
             </div>
 
-            <div className="md:col-span-2 flex items-end">
+            <div className="flex items-end">
               <div className="bg-blue-50 p-4 rounded-lg w-full">
                 <p className="text-sm text-gray-600">Solde au {new Date().toLocaleDateString('fr-FR')}</p>
                 <p className={`text-2xl font-bold ${solde >= 0 ? 'text-green-600' : 'text-red-600'}`}>

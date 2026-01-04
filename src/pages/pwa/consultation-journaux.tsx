@@ -483,10 +483,10 @@ export default function JournauxPWA() {
               </h1>
               <p className="text-gray-600 mb-1">Consultation des écritures par journal et par mois</p>
               {selectedEntrepriseId && selectedExerciceId && (
-                <div className="text-sm text-gray-500">
-                  <span className="font-semibold">Entreprise :</span> {entreprises.find(e => e.id === selectedEntrepriseId)?.raison_sociale || entreprises.find(e => e.id === selectedEntrepriseId)?.nom || 'N/A'}
+                <div className="text-lg font-bold text-blue-600">
+                  Entreprise : {entreprises.find(e => e.id === selectedEntrepriseId)?.raison_sociale || entreprises.find(e => e.id === selectedEntrepriseId)?.nom || 'N/A'}
                   {' • '}
-                  <span className="font-semibold">Exercice :</span> {exercices.find(ex => ex.id === selectedExerciceId)?.annee || 'N/A'} {exercices.find(ex => ex.id === selectedExerciceId)?.cloture ? '(Clôturé)' : '(En cours)'}
+                  Exercice : {exercices.find(ex => ex.id === selectedExerciceId)?.annee || 'N/A'} {exercices.find(ex => ex.id === selectedExerciceId)?.cloture ? '(Clôturé)' : '(En cours)'}
                 </div>
               )}
             </div>

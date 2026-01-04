@@ -290,10 +290,10 @@ export default function BalancePWA() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Balance Comptable</h1>
               {selectedEntreprise && exerciceId && (
-                <div className="text-sm text-gray-500 mt-1">
-                  <span className="font-semibold">Entreprise :</span> {entreprises.find(e => e.id === selectedEntreprise)?.raison_sociale || entreprises.find(e => e.id === selectedEntreprise)?.nom || 'N/A'}
+                <div className="text-lg font-bold text-blue-600 mt-1">
+                  Entreprise : {entreprises.find(e => e.id === selectedEntreprise)?.raison_sociale || entreprises.find(e => e.id === selectedEntreprise)?.nom || 'N/A'}
                   {' • '}
-                  <span className="font-semibold">Exercice :</span> {exercices.find(ex => ex.id === exerciceId)?.annee || 'N/A'} {exercices.find(ex => ex.id === exerciceId)?.cloture ? '(Clôturé)' : '(En cours)'}
+                  Exercice : {exercices.find(ex => ex.id === exerciceId)?.annee || 'N/A'} {exercices.find(ex => ex.id === exerciceId)?.cloture ? '(Clôturé)' : '(En cours)'}
                 </div>
               )}
             </div>
