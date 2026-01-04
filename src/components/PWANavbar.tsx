@@ -48,6 +48,7 @@ export default function PWANavbar() {
     {
       label: '🛠️ Outils',
       submenu: [
+        { label: '🔄 Modification Masse Comptes', path: '/pwa/modification-masse-comptes' },
         { label: '💾 Backup', path: '/pwa/backup' },
         { label: '🗄️ Database', path: '/pwa/database' },
         { label: '🔧 Corriger Accents', path: '/pwa/corriger-accents' },
