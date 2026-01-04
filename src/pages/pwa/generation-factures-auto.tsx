@@ -196,8 +196,9 @@ export default function GenerationFacturesAutoPWA() {
       let label: string;
 
       if (typeJournal === 'VE') {
-        numFacture = `F-${String(numeroFacture).padStart(3, '0')}`;
-        label = `Facture ${numFacture} ${mois}/${annee} ${client.nomClient}`;
+        const prefixe = `${annee}${String(mois).padStart(2, '0')}`;
+        numFacture = `${prefixe}-${String(numeroFacture).padStart(3, '0')}`;
+        label = `Facture ${numFacture} ${client.nomClient}`;
         numeroFacture++;
       } else {
         numFacture = client.nomClient;
