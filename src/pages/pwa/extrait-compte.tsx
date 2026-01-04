@@ -123,7 +123,24 @@ export default function ExtraitComptePWA() {
               <h1 className="text-3xl font-bold text-blue-600 mb-2">
                 📖 Extrait de compte {compte}
               </h1>
-              <p className="text-gray-600">{nomCompte}</p>
+              <p className="text-gray-600 mb-1">{nomCompte}</p>
+              {selectedExerciceId && exercices.length > 0 && (
+                <div className="text-sm text-gray-500">
+                  {(() => {
+                    const exercice = exercices.find(ex => ex.id === selectedExerciceId);
+                    if (!exercice) return null;
+                    const entrepriseId = exercice.entrepriseId || exercice.entreprise_id;
+                    const entreprise = entreprises.find(ent => ent.id === entrepriseId);
+                    return (
+                      <>
+                        <span className="font-semibold">Entreprise :</span> {entreprise?.raison_sociale || entreprise?.nom || 'N/A'}
+                        {' • '}
+                        <span className="font-semibold">Exercice :</span> {exercice.annee} {exercice.cloture ? '(Clôturé)' : '(En cours)'}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
             <button
               onClick={() => router.back()}
