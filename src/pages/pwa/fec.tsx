@@ -338,7 +338,16 @@ export default function FECPWA() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
-            <h1 className="text-3xl font-bold text-gray-900">FEC (Fichier des Écritures Comptables)</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">FEC (Fichier des Écritures Comptables)</h1>
+              {selectedEntreprise && selectedExercice && (
+                <div className="text-lg font-bold text-blue-600 mt-1">
+                  Entreprise : {entreprises.find(e => e.id === selectedEntreprise)?.raison_sociale || entreprises.find(e => e.id === selectedEntreprise)?.nom || 'N/A'}
+                  {' • '}
+                  Exercice : {exercices.find(ex => ex.id === selectedExercice)?.annee || 'N/A'} {exercices.find(ex => ex.id === selectedExercice)?.cloture ? '(Clôturé)' : '(En cours)'}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
