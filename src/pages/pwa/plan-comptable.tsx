@@ -259,10 +259,11 @@ export default function PlanComptablePage() {
   }
 
   const tauxTvaOptions = [
-    { taux: 20, libelle: 'TVA 20%' },
-    { taux: 10, libelle: 'TVA 10%' },
-    { taux: 5.5, libelle: 'TVA 5.5%' },
+    { taux: 0, libelle: 'Non soumis à TVA' },
     { taux: 2.1, libelle: 'TVA 2.1%' },
+    { taux: 5.5, libelle: 'TVA 5.5%' },
+    { taux: 10, libelle: 'TVA 10%' },
+    { taux: 20, libelle: 'TVA 20%' },
   ];
 
   return (
