@@ -544,10 +544,12 @@ export default function BalanceComptablePWA() {
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Balance Comptable</h2>
 
-            {selectedEntreprise && (
-              <p className="text-gray-600">
-                Entreprise : <span className="font-semibold">{selectedEntreprise.raison_sociale || selectedEntreprise.nom}</span>
-              </p>
+            {selectedEntreprise && exerciceId && (
+              <div className="text-lg font-bold text-blue-600">
+                Entreprise : {selectedEntreprise.raison_sociale || selectedEntreprise.nom}
+                {' • '}
+                Exercice : {exercices.find(ex => ex.id === exerciceId)?.annee || 'N/A'} {exercices.find(ex => ex.id === exerciceId)?.cloture ? '(Clôturé)' : '(En cours)'}
+              </div>
             )}
           </div>
 
