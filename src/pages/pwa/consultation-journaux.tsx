@@ -303,8 +303,10 @@ export default function JournauxPWA() {
       if (compteNumero) {
         try {
           await getCompte(compteNumero);
+          console.log(`✅ Compte ${compteNumero} existe déjà`);
         } catch (error) {
           // Le compte n'existe pas, le créer
+          console.log(`📝 Création du compte ${compteNumero}`);
           // Déterminer le type de compte selon le premier chiffre
           let type = 'general';
           if (compteNumero.startsWith('1')) type = 'capitaux';
@@ -316,11 +318,12 @@ export default function JournauxPWA() {
           else if (compteNumero.startsWith('7')) type = 'produit';
           else if (compteNumero.startsWith('8')) type = 'special';
 
-          await createCompte({
+          const newCompte = await createCompte({
             numero: compteNumero,
             nom: `Compte ${compteNumero}`,
             type: type,
           });
+          console.log(`✅ Compte créé:`, newCompte);
         }
       }
 
