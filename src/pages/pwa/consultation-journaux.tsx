@@ -305,10 +305,21 @@ export default function JournauxPWA() {
           await getCompte(compteNumero);
         } catch (error) {
           // Le compte n'existe pas, le créer
+          // Déterminer le type de compte selon le premier chiffre
+          let type = 'general';
+          if (compteNumero.startsWith('1')) type = 'capitaux';
+          else if (compteNumero.startsWith('2')) type = 'immobilisation';
+          else if (compteNumero.startsWith('3')) type = 'stock';
+          else if (compteNumero.startsWith('4')) type = 'tiers';
+          else if (compteNumero.startsWith('5')) type = 'financier';
+          else if (compteNumero.startsWith('6')) type = 'charge';
+          else if (compteNumero.startsWith('7')) type = 'produit';
+          else if (compteNumero.startsWith('8')) type = 'special';
+
           await createCompte({
             numero: compteNumero,
-            libelle: `Compte ${compteNumero}`,
-            exerciceId: selectedExerciceId,
+            nom: `Compte ${compteNumero}`,
+            type: type,
           });
         }
       }
