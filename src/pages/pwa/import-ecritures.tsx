@@ -39,6 +39,8 @@ export default function ImportEcrituresPWA() {
   const [erreurs, setErreurs] = useState<string[]>([]);
   const [step, setStep] = useState<'select' | 'preview' | 'done'>('select');
   const [importing, setImporting] = useState(false);
+  const [entrepriseValidated, setEntrepriseValidated] = useState(false);
+  const [exerciceValidated, setExerciceValidated] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -255,15 +257,25 @@ export default function ImportEcrituresPWA() {
           {/* Sélection entreprise et exercice */}
           {step === 'select' && (
             <>
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
+              {/* Étape 1: Sélection de l'entreprise */}
+              <div className={`border-2 rounded-lg p-6 mb-6 ${entrepriseValidated ? 'border-green-500 bg-green-50' : 'border-blue-500 bg-blue-50'}`}>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">
+                  {entrepriseValidated ? '✅ Étape 1: Entreprise validée' : '1️⃣ Étape 1: Sélection de l\'entreprise'}
+                </h2>
+                <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Entreprise
                   </label>
                   <select
                     value={selectedEntreprise || ''}
-                    onChange={(e) => setSelectedEntreprise(Number(e.target.value))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => {
+                      setSelectedEntreprise(Number(e.target.value));
+                      setEntrepriseValidated(false);
+                      setExerciceValidated(false);
+                      setSelectedExercice(null);
+                    }}
+                    disabled={entrepriseValidated}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                   >
                     <option value="">Sélectionner une entreprise</option>
                     {entreprises.map((e) => (
@@ -273,25 +285,73 @@ export default function ImportEcrituresPWA() {
                     ))}
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Exercice
-                  </label>
-                  <select
-                    value={selectedExercice || ''}
-                    onChange={(e) => setSelectedExercice(Number(e.target.value))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                {!entrepriseValidated ? (
+                  <button
+                    onClick={() => setEntrepriseValidated(true)}
+                    disabled={!selectedEntreprise}
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                   >
-                    <option value="">Sélectionner un exercice</option>
-                    {exercices.map((ex) => (
-                      <option key={ex.id} value={ex.id}>
-                        {ex.annee} {ex.cloture ? '(Clôturé)' : '(En cours)'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    ✓ Valider l'entreprise
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEntrepriseValidated(false);
+                      setExerciceValidated(false);
+                      setSelectedExercice(null);
+                    }}
+                    className="w-full bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+                  >
+                    ✎ Modifier l'entreprise
+                  </button>
+                )}
               </div>
+
+              {/* Étape 2: Sélection de l'exercice */}
+              {entrepriseValidated && (
+                <div className={`border-2 rounded-lg p-6 mb-6 ${exerciceValidated ? 'border-green-500 bg-green-50' : 'border-blue-500 bg-blue-50'}`}>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    {exerciceValidated ? '✅ Étape 2: Exercice validé' : '2️⃣ Étape 2: Sélection de l\'exercice'}
+                  </h2>
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Exercice
+                    </label>
+                    <select
+                      value={selectedExercice || ''}
+                      onChange={(e) => {
+                        setSelectedExercice(Number(e.target.value));
+                        setExerciceValidated(false);
+                      }}
+                      disabled={exerciceValidated}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    >
+                      <option value="">Sélectionner un exercice</option>
+                      {exercices.map((ex) => (
+                        <option key={ex.id} value={ex.id}>
+                          {ex.annee} {ex.cloture ? '(Clôturé)' : '(En cours)'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {!exerciceValidated ? (
+                    <button
+                      onClick={() => setExerciceValidated(true)}
+                      disabled={!selectedExercice}
+                      className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ✓ Valider l'exercice
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setExerciceValidated(false)}
+                      className="w-full bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+                    >
+                      ✎ Modifier l'exercice
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Format attendu */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -317,41 +377,45 @@ export default function ImportEcrituresPWA() {
                 </div>
               </div>
 
-              {/* Sélection fichier */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Fichier CSV
-                </label>
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
+              {/* Sélection fichier - uniquement si entreprise et exercice validés */}
+              {exerciceValidated && (
+                <>
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Fichier CSV
+                    </label>
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={handleFileChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
 
-              {/* Erreurs */}
-              {erreurs.length > 0 && (
-                <div className="bg-red-50 border border-red-300 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-red-800 mb-2">❌ Erreurs détectées :</h3>
-                  <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
-                    {erreurs.map((err, idx) => (
-                      <li key={idx}>{err}</li>
-                    ))}
-                  </ul>
-                  <p className="text-red-600 font-semibold mt-3">
-                    L'import est rejeté. Corrigez les erreurs et réessayez.
-                  </p>
-                </div>
+                  {/* Erreurs */}
+                  {erreurs.length > 0 && (
+                    <div className="bg-red-50 border border-red-300 rounded-lg p-4 mb-6">
+                      <h3 className="font-semibold text-red-800 mb-2">❌ Erreurs détectées :</h3>
+                      <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                        {erreurs.map((err, idx) => (
+                          <li key={idx}>{err}</li>
+                        ))}
+                      </ul>
+                      <p className="text-red-600 font-semibold mt-3">
+                        L'import est rejeté. Corrigez les erreurs et réessayez.
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={parseCSV}
+                    disabled={!csvFile || !entrepriseValidated || !exerciceValidated}
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    📊 Prévisualiser les écritures
+                  </button>
+                </>
               )}
-
-              <button
-                onClick={parseCSV}
-                disabled={!csvFile || !selectedEntreprise || !selectedExercice}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              >
-                📊 Prévisualiser les écritures
-              </button>
             </>
           )}
 
@@ -413,6 +477,8 @@ export default function ImportEcrituresPWA() {
                     setCsvFile(null);
                     setEcritures([]);
                     setErreurs([]);
+                    setEntrepriseValidated(false);
+                    setExerciceValidated(false);
                   }}
                   className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
                 >
@@ -447,6 +513,8 @@ export default function ImportEcrituresPWA() {
                     setCsvFile(null);
                     setEcritures([]);
                     setErreurs([]);
+                    setEntrepriseValidated(false);
+                    setExerciceValidated(false);
                   }}
                   className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
                 >
