@@ -13,7 +13,7 @@ export default function BackupPage() {
   async function handleExport() {
     try {
       setExporting(true);
-      setMessage(null);
+      setMessage({ type: 'success', text: '⏳ Export en cours...' });
 
       const data = await exportAllData();
 
@@ -49,9 +49,10 @@ export default function BackupPage() {
 
     try {
       setImporting(true);
-      setMessage(null);
+      setMessage({ type: 'success', text: '⏳ Lecture du fichier...' });
 
       const text = await file.text();
+      setMessage({ type: 'success', text: '⏳ Analyse des données...' });
       const data = JSON.parse(text);
 
       // Valider le format
@@ -59,6 +60,7 @@ export default function BackupPage() {
         throw new Error('Format de fichier invalide');
       }
 
+      setMessage({ type: 'success', text: '⏳ Import des données dans la base...' });
       const result = await importAllData(data);
 
       setMessage({
@@ -88,6 +90,7 @@ export default function BackupPage() {
     }
 
     try {
+      setMessage({ type: 'success', text: '⏳ Suppression de la base de données...' });
       await deleteDB();
       setMessage({
         type: 'success',
@@ -131,9 +134,14 @@ export default function BackupPage() {
         {/* Message */}
         {message && (
           <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <p className={`${message.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
-              {message.text}
-            </p>
+            <div className="flex items-center gap-3">
+              {(importing || exporting) && message.text.startsWith('⏳') && (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-800"></div>
+              )}
+              <p className={`${message.type === 'success' ? 'text-green-800' : 'text-red-800'} font-medium`}>
+                {message.text}
+              </p>
+            </div>
           </div>
         )}
 
@@ -148,9 +156,10 @@ export default function BackupPage() {
           </p>
           <button
             onClick={handleExport}
-            disabled={exporting}
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={exporting || importing}
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
           >
+            {exporting && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
             {exporting ? 'Export en cours...' : '📥 Télécharger la sauvegarde'}
           </button>
         </div>
@@ -170,13 +179,14 @@ export default function BackupPage() {
               <strong>⚠️ Important :</strong> Si vous voulez remplacer complètement vos données, supprimez d'abord la base de données ci-dessous, puis importez votre sauvegarde.
             </p>
           </div>
-          <label className="inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
+          <label className={`inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg transition-colors ${importing || exporting ? 'bg-gray-400 cursor-not-allowed' : 'hover:bg-green-700 cursor-pointer'}`}>
+            {importing && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
             {importing ? 'Import en cours...' : '📤 Choisir un fichier de sauvegarde'}
             <input
               type="file"
               accept=".json"
               onChange={handleImport}
-              disabled={importing}
+              disabled={importing || exporting}
               className="hidden"
             />
           </label>
@@ -193,7 +203,8 @@ export default function BackupPage() {
           </p>
           <button
             onClick={handleDeleteAll}
-            className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+            disabled={importing || exporting}
+            className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             🗑️ Supprimer toutes les données
           </button>
