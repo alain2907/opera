@@ -148,7 +148,7 @@ export default function GenerationFacturesAutoPWA() {
         console.log(`[GenFactures] Compte ${numeroCompte}:`, compte);
 
         // Récupérer TVA et comptes depuis le compte ou valeurs par défaut
-        const tauxTVA = compte?.taux_tva || compte?.tauxTva || compte?.tauxTVA || 20;
+        const tauxTVA = compte?.taux_tva ?? compte?.tauxTva ?? compte?.tauxTVA ?? 0;
         const compteProduit = compte?.compte_charge || compte?.compteCharge || (typeJournal === 'VE' ? '7' : '6');
         const compteTVA = compte?.compte_tva || compte?.compteTva || compte?.compteTVA || (typeJournal === 'VE' ? '44571' : '44566');
 
