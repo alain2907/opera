@@ -95,16 +95,16 @@ export default function BackupPage() {
       await deleteDB();
       setMessage({
         type: 'success',
-        text: '✅ Base de données supprimée. Rechargement de la page...',
+        text: '✅ SUPPRESSION RÉUSSIE !\nToutes les données ont été supprimées.\nRechargement de la page dans 3 secondes...',
       });
       setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, 3000);
     } catch (error: any) {
       console.error('Erreur suppression:', error);
       setMessage({
         type: 'error',
-        text: `❌ Erreur lors de la suppression : ${error.message}`,
+        text: `❌ ERREUR lors de la suppression : ${error.message}`,
       });
     }
   }
