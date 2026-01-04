@@ -301,10 +301,10 @@ export default function JournauxPWA() {
 
       // Vérifier si le compte existe, sinon le créer
       if (compteNumero) {
-        try {
-          await getCompte(compteNumero);
+        const compteExistant = await getCompte(compteNumero);
+        if (compteExistant) {
           console.log(`✅ Compte ${compteNumero} existe déjà`);
-        } catch (error) {
+        } else {
           // Le compte n'existe pas, le créer
           console.log(`📝 Création du compte ${compteNumero}`);
           // Déterminer le type de compte selon le premier chiffre
