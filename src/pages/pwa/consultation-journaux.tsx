@@ -66,6 +66,8 @@ export default function JournauxPWA() {
   const [migrationResult, setMigrationResult] = useState<string | null>(null);
   const [fromUrlParams, setFromUrlParams] = useState(false);
   const initialLoadRef = useRef(true);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editedEcriture, setEditedEcriture] = useState<any>(null);
 
   useEffect(() => {
     loadInitialData();
@@ -276,6 +278,42 @@ export default function JournauxPWA() {
       setMigrationResult('❌ Erreur lors de la migration');
     } finally {
       setMigrating(false);
+    }
+  };
+
+  const handleEditClick = (ecriture: any) => {
+    setEditingId(ecriture.id);
+    setEditedEcriture({ ...ecriture });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditedEcriture(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editedEcriture) return;
+
+    try {
+      // Importer updateEcriture
+      const { updateEcriture } = await import('../../lib/storageAdapter');
+
+      await updateEcriture(editedEcriture.id, {
+        date: editedEcriture.date,
+        compteNumero: editedEcriture.compteNumero || editedEcriture.compte_numero,
+        libelle: editedEcriture.libelle,
+        debit: editedEcriture.debit,
+        credit: editedEcriture.credit,
+      });
+
+      // Recharger les écritures
+      await loadEcritures();
+
+      setEditingId(null);
+      setEditedEcriture(null);
+    } catch (error) {
+      console.error('Erreur sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde');
     }
   };
 
@@ -515,42 +553,119 @@ export default function JournauxPWA() {
                     <th className="px-4 py-3 text-left text-sm font-semibold">Libellé</th>
                     <th className="px-4 py-3 text-right text-sm font-semibold">Débit</th>
                     <th className="px-4 py-3 text-right text-sm font-semibold">Crédit</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold w-24">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {ecritures.map((ecriture: any, index) => (
+                  {ecritures.map((ecriture: any, index) => {
+                    const isEditing = editingId === ecriture.id;
+                    const displayData = isEditing ? editedEcriture : ecriture;
+
+                    return (
                     <tr
                       key={ecriture.id || index}
-                      className="hover:bg-blue-50 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/pwa/ecritures?id=${ecriture.id}`)}
+                      className={`hover:bg-blue-50 transition-colors ${!isEditing ? 'cursor-pointer' : ''}`}
                     >
                       <td className="px-4 py-3 text-sm font-mono text-blue-600">
                         {ecriture.numeroEcriture || `#${ecriture.id}`}
                       </td>
-                      <td className="px-4 py-3 text-sm">
-                        {new Date(ecriture.date).toLocaleDateString('fr-FR')}
+                      <td className="px-4 py-3 text-sm" onClick={() => !isEditing && handleEditClick(ecriture)}>
+                        {isEditing ? (
+                          <input
+                            type="date"
+                            value={displayData.date?.split('T')[0] || ''}
+                            onChange={(e) => setEditedEcriture({ ...editedEcriture, date: e.target.value })}
+                            className="w-full px-2 py-1 border rounded"
+                          />
+                        ) : (
+                          new Date(ecriture.date).toLocaleDateString('fr-FR')
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-sm font-mono">
+                      <td className="px-4 py-3 text-sm font-mono" onClick={() => !isEditing && handleEditClick(ecriture)}>
                         {ecriture.pieceRef || ecriture.piece_ref || '-'}
                       </td>
-                      <td className="px-4 py-3 text-sm font-mono">
-                        {ecriture.compteNumero || ecriture.compte_numero}
+                      <td className="px-4 py-3 text-sm font-mono" onClick={() => !isEditing && handleEditClick(ecriture)}>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={displayData.compteNumero || displayData.compte_numero || ''}
+                            onChange={(e) => setEditedEcriture({ ...editedEcriture, compteNumero: e.target.value })}
+                            className="w-full px-2 py-1 border rounded font-mono"
+                          />
+                        ) : (
+                          ecriture.compteNumero || ecriture.compte_numero
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-sm">
-                        {ecriture.libelle}
+                      <td className="px-4 py-3 text-sm" onClick={() => !isEditing && handleEditClick(ecriture)}>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={displayData.libelle || ''}
+                            onChange={(e) => setEditedEcriture({ ...editedEcriture, libelle: e.target.value })}
+                            className="w-full px-2 py-1 border rounded"
+                          />
+                        ) : (
+                          ecriture.libelle
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-right font-mono text-green-700">
-                        {ecriture.debit ? formatMontant(ecriture.debit) : '-'}
+                      <td className="px-4 py-3 text-sm text-right font-mono text-green-700" onClick={() => !isEditing && handleEditClick(ecriture)}>
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editedEcriture?.debit || ''}
+                            onChange={(e) => setEditedEcriture({ ...editedEcriture, debit: parseFloat(e.target.value) || 0 })}
+                            className="w-full px-2 py-1 border rounded text-right"
+                          />
+                        ) : (
+                          ecriture.debit ? formatMontant(ecriture.debit) : '-'
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-right font-mono text-red-700">
-                        {ecriture.credit ? formatMontant(ecriture.credit) : '-'}
+                      <td className="px-4 py-3 text-sm text-right font-mono text-red-700" onClick={() => !isEditing && handleEditClick(ecriture)}>
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editedEcriture?.credit || ''}
+                            onChange={(e) => setEditedEcriture({ ...editedEcriture, credit: parseFloat(e.target.value) || 0 })}
+                            className="w-full px-2 py-1 border rounded text-right"
+                          />
+                        ) : (
+                          ecriture.credit ? formatMontant(ecriture.credit) : '-'
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {isEditing ? (
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={handleSaveEdit}
+                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="px-2 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-700"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleEditClick(ecriture)}
+                            className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                          >
+                            ✎
+                          </button>
+                        )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
                 <tfoot>
                   <tr className="bg-gray-100 font-bold">
-                    <td colSpan={5} className="px-4 py-3 text-sm text-right">
+                    <td colSpan={6} className="px-4 py-3 text-sm text-right">
                       TOTAUX
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-mono text-green-700">
