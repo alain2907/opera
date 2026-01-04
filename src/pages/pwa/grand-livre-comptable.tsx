@@ -314,10 +314,12 @@ export default function GrandLivreComptablePWA() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="mb-6">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">📘 Grand Livre Comptable</h2>
-            {entrepriseActive && (
-              <p className="text-gray-600">
-                Entreprise : <span className="font-semibold">{entrepriseActive.raison_sociale || entrepriseActive.nom}</span>
-              </p>
+            {entrepriseActive && exerciceId && (
+              <div className="text-sm text-gray-500">
+                <span className="font-semibold">Entreprise :</span> {entrepriseActive.raison_sociale || entrepriseActive.nom}
+                {' • '}
+                <span className="font-semibold">Exercice :</span> {exercices.find(ex => ex.id === exerciceId)?.annee || 'N/A'} {exercices.find(ex => ex.id === exerciceId)?.cloture ? '(Clôturé)' : '(En cours)'}
+              </div>
             )}
           </div>
 
