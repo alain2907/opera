@@ -7,6 +7,7 @@ import {
   createCompte,
   createEcriture,
 } from '../../lib/storageAdapter';
+import { generateNumeroEcriture } from '../../lib/generateNumeroEcriture';
 import PWANavbar from '../../components/PWANavbar';
 
 interface CSVLine {
@@ -324,12 +325,16 @@ export default function ImportCSVPWA() {
           const montant = Math.abs(line.montant);
           const isNegative = line.montant < 0;
 
+          // Générer un numéro d'écriture unique pour cette ligne
+          const numeroEcriture = await generateNumeroEcriture('BQ', line.date);
+
           // Ligne principale
           await createEcriture({
             exerciceId: selectedExercice,
             date: line.date,
             journal: 'BQ',
             pieceRef: line.numeroPiece,
+            numeroEcriture,
             libelle: line.libelle,
             compteNumero: line.compte!,
             debit: isNegative ? montant : undefined,
@@ -342,6 +347,7 @@ export default function ImportCSVPWA() {
             date: line.date,
             journal: 'BQ',
             pieceRef: line.numeroPiece,
+            numeroEcriture,
             libelle: line.libelle,
             compteNumero: compteContrepartie,
             debit: isNegative ? undefined : montant,
@@ -370,6 +376,9 @@ export default function ImportCSVPWA() {
           // Trouver la dernière date du mois
           const lastDate = lines[lines.length - 1].date;
 
+          // Générer un numéro d'écriture unique pour ce mois
+          const numeroEcriture = await generateNumeroEcriture('BQ', lastDate);
+
           // 1. Créer toutes les lignes du CSV
           for (const line of lines) {
             const montant = Math.abs(line.montant);
@@ -380,6 +389,7 @@ export default function ImportCSVPWA() {
               date: line.date,
               journal: 'BQ',
               pieceRef: numeroPiece,
+              numeroEcriture,
               libelle: line.libelle,
               compteNumero: line.compte!,
               debit: isNegative ? montant : undefined,
@@ -398,6 +408,7 @@ export default function ImportCSVPWA() {
             date: lastDate,
             journal: 'BQ',
             pieceRef: numeroPiece,
+            numeroEcriture,
             libelle: `Solde ${month}`,
             compteNumero: compteContrepartie,
             debit: isContrepartieDebit ? montantContrepartie : undefined,
