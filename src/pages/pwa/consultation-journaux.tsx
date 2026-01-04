@@ -295,12 +295,27 @@ export default function JournauxPWA() {
     if (!editedEcriture) return;
 
     try {
-      // Importer updateEcriture
-      const { updateEcriture } = await import('../../lib/storageAdapter');
+      const { updateEcriture, getCompte, createCompte } = await import('../../lib/storageAdapter');
+
+      const compteNumero = editedEcriture.compteNumero || editedEcriture.compte_numero;
+
+      // Vérifier si le compte existe, sinon le créer
+      if (compteNumero) {
+        try {
+          await getCompte(compteNumero);
+        } catch (error) {
+          // Le compte n'existe pas, le créer
+          await createCompte({
+            numero: compteNumero,
+            libelle: `Compte ${compteNumero}`,
+            exerciceId: selectedExerciceId,
+          });
+        }
+      }
 
       await updateEcriture(editedEcriture.id, {
         date: editedEcriture.date,
-        compteNumero: editedEcriture.compteNumero || editedEcriture.compte_numero,
+        compteNumero,
         libelle: editedEcriture.libelle,
         debit: editedEcriture.debit,
         credit: editedEcriture.credit,
