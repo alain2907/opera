@@ -346,6 +346,45 @@ export default function JournauxPWA() {
     }
   };
 
+  const handleDeleteEcriture = async (ecriture: any) => {
+    const numeroEcriture = ecriture.numeroEcriture || `#${ecriture.id}`;
+
+    if (!confirm(`⚠️ Voulez-vous supprimer l'écriture ${numeroEcriture} et toutes ses lignes ?\n\nCette action est irréversible.`)) {
+      return;
+    }
+
+    try {
+      const { deleteEcriture, getAllEcritures } = await import('../../lib/storageAdapter');
+
+      // Trouver toutes les lignes de cette écriture
+      const allEcritures = await getAllEcritures();
+      const lignesASupprimer = allEcritures.filter((e: any) => {
+        if (ecriture.numeroEcriture) {
+          // Si numeroEcriture existe, l'utiliser
+          return e.numeroEcriture === ecriture.numeroEcriture;
+        } else {
+          // Sinon, utiliser la piece_ref et la date (ancien système)
+          const pieceRef = ecriture.pieceRef || ecriture.piece_ref;
+          const date = ecriture.date;
+          return (e.pieceRef === pieceRef || e.piece_ref === pieceRef) && e.date === date;
+        }
+      });
+
+      // Supprimer toutes les lignes
+      for (const ligne of lignesASupprimer) {
+        await deleteEcriture(ligne.id);
+      }
+
+      // Recharger les écritures
+      await loadEcritures();
+
+      alert(`✅ Écriture supprimée : ${lignesASupprimer.length} ligne(s)`);
+    } catch (error) {
+      console.error('Erreur suppression:', error);
+      alert('❌ Erreur lors de la suppression');
+    }
+  };
+
   const formatMontant = (montant: number) => {
     return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 2,
@@ -680,12 +719,22 @@ export default function JournauxPWA() {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => handleEditClick(ecriture)}
-                            className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                          >
-                            ✎
-                          </button>
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={() => handleEditClick(ecriture)}
+                              className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                              title="Modifier"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEcriture(ecriture)}
+                              className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                              title="Supprimer l'écriture complète"
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
