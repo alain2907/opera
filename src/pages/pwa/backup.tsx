@@ -18,11 +18,12 @@ export default function BackupPage() {
       const data = await exportAllData();
 
       // Créer un fichier JSON et le télécharger
+      const fileName = `comptabilite-backup-${new Date().toISOString().split('T')[0]}.json`;
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `comptabilite-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -30,7 +31,7 @@ export default function BackupPage() {
 
       setMessage({
         type: 'success',
-        text: `✅ Export réussi : ${data.data.entreprises.length} entreprises, ${data.data.exercices.length} exercices, ${data.data.ecritures.length} écritures`,
+        text: `✅ EXPORT RÉUSSI ! Fichier téléchargé : ${fileName}\n${data.data.entreprises.length} entreprises, ${data.data.exercices.length} exercices, ${data.data.ecritures.length} écritures`,
       });
     } catch (error: any) {
       console.error('Erreur export:', error);
@@ -65,7 +66,7 @@ export default function BackupPage() {
 
       setMessage({
         type: 'success',
-        text: `✅ Import réussi : ${result.imported.entreprises} entreprises, ${result.imported.exercices} exercices, ${result.imported.ecritures} écritures`,
+        text: `✅ IMPORT RÉUSSI ! ${result.imported.entreprises} entreprises, ${result.imported.exercices} exercices, ${result.imported.ecritures} écritures ont été importées dans la base de données.`,
       });
     } catch (error: any) {
       console.error('Erreur import:', error);
@@ -133,12 +134,12 @@ export default function BackupPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Message */}
         {message && (
-          <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <div className="flex items-center gap-3">
+          <div className={`mb-6 p-5 rounded-lg shadow-lg ${message.type === 'success' ? 'bg-green-50 border-2 border-green-300' : 'bg-red-50 border-2 border-red-300'}`}>
+            <div className="flex items-start gap-3">
               {(importing || exporting) && message.text.startsWith('⏳') && (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-800"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-800 flex-shrink-0 mt-1"></div>
               )}
-              <p className={`${message.type === 'success' ? 'text-green-800' : 'text-red-800'} font-medium`}>
+              <p className={`${message.type === 'success' ? 'text-green-800' : 'text-red-800'} font-semibold text-lg whitespace-pre-line`}>
                 {message.text}
               </p>
             </div>
