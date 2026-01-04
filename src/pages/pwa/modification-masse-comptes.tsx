@@ -214,6 +214,13 @@ export default function ModificationMasseComptesPWA() {
             <p className="text-gray-600">
               Modifier les numéros de compte par journal et période
             </p>
+            {selectedEntreprise && selectedExercice && (
+              <div className="text-lg font-bold text-blue-600 mt-2">
+                Entreprise : {entreprises.find(e => e.id === selectedEntreprise)?.raison_sociale || entreprises.find(e => e.id === selectedEntreprise)?.nom || 'N/A'}
+                {' • '}
+                Exercice : {exercices.find(ex => ex.id === selectedExercice)?.annee || 'N/A'} {exercices.find(ex => ex.id === selectedExercice)?.cloture ? '(Clôturé)' : '(En cours)'}
+              </div>
+            )}
           </div>
 
           {/* Message */}
