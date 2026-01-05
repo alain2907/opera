@@ -394,18 +394,14 @@ export default function GenerationFacturesAutoPWA() {
                   ? 'Génère automatiquement les factures clients depuis la balance (comptes 411/412)'
                   : 'Génère automatiquement les factures fournisseurs depuis la balance (comptes 401/402)'}
               </p>
+              {entrepriseActive && exerciceActif && (
+                <div className="text-lg font-bold text-blue-600 mt-2">
+                  Entreprise : {entrepriseActive.raison_sociale || entrepriseActive.nom}
+                  {' • '}
+                  Exercice : {exerciceActif.annee} {exerciceActif.cloture ? '(Clôturé)' : '(En cours)'}
+                </div>
+              )}
             </div>
-            {entrepriseActive && (
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Entreprise</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {entrepriseActive.raison_sociale || entrepriseActive.nom}
-                </p>
-                {exerciceActif && (
-                  <p className="text-sm text-gray-600">Exercice {exerciceActif.annee}</p>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
