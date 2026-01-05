@@ -396,6 +396,9 @@ export default function RechercheEcrituresPWA() {
                         )}
                       </div>
                     </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">
+                      N° Écriture
+                    </th>
                     <th
                       className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-green-800"
                       onClick={() => handleSort('compte')}
@@ -467,6 +470,9 @@ export default function RechercheEcrituresPWA() {
                       <td className="px-4 py-3 text-sm font-mono font-semibold text-blue-700">
                         {ecriture.journal}
                       </td>
+                      <td className="px-4 py-3 text-sm font-mono text-purple-600 font-semibold">
+                        {ecriture.numeroEcriture || '-'}
+                      </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="font-mono font-bold text-gray-900">
                           {ecriture.compteNumero || ecriture.compte_numero}
@@ -492,7 +498,7 @@ export default function RechercheEcrituresPWA() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-green-100 font-bold border-t-2 border-green-300">
-                    <td colSpan={5} className="px-4 py-3 text-sm text-right">
+                    <td colSpan={6} className="px-4 py-3 text-sm text-right">
                       TOTAUX ({ecrituresFiltrees.length} écriture(s))
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-mono text-green-700">
