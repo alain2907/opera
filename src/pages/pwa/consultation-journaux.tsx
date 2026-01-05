@@ -858,7 +858,6 @@ export default function JournauxPWA() {
                       </td>
                     </tr>
 
-                    {/* Ligne d'ajout si on est en mode ajout pour cette écriture */}
                     {ajoutLigneNumeroEcriture === ecriture.numeroEcriture && (
                       <tr className="bg-purple-50 border-2 border-purple-400">
                         <td className="px-4 py-3 text-sm text-gray-500">-</td>
