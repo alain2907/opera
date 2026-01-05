@@ -22,6 +22,7 @@ export default function PWANavbar() {
       submenu: [
         { label: '✍️ Saisie', path: '/pwa/ecritures' },
         { label: '📋 Gestion Écritures', path: '/pwa/gestion-ecritures' },
+        { label: '🔍 Recherche Écritures', path: '/pwa/recherche-ecritures' },
         { label: '📒 Consultation Journaux', path: '/pwa/consultation-journaux' },
         { label: '⚖️ Balance', path: '/pwa/balance-comptable' },
         { label: '📈 Balance Progressive', path: '/pwa/balance-progressive-comptable' },
