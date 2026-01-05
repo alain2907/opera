@@ -46,7 +46,6 @@ export default function GenerationFacturesAutoPWA() {
   const [typeJournal, setTypeJournal] = useState<'VE' | 'HA'>('VE');
   const [journal, setJournal] = useState('VE');
   const [mois, setMois] = useState(new Date().getMonth() + 1);
-  const [annee, setAnnee] = useState(new Date().getFullYear());
   const [numeroFactureDebut, setNumeroFactureDebut] = useState(1);
 
   const [balancesClients, setBalancesClients] = useState<ClientBalance[]>([]);
@@ -104,6 +103,14 @@ export default function GenerationFacturesAutoPWA() {
       alert('Entreprise ou exercice non sélectionné');
       return;
     }
+
+    // Récupérer l'année depuis l'exercice sélectionné
+    const exerciceActif = exercices.find(ex => ex.id === selectedExercice);
+    if (!exerciceActif) {
+      alert('Exercice non trouvé');
+      return;
+    }
+    const annee = exerciceActif.annee;
 
     setLoading(true);
     try {
@@ -179,6 +186,14 @@ export default function GenerationFacturesAutoPWA() {
       alert(typeJournal === 'VE' ? 'Aucun client à facturer ce mois-ci' : 'Aucun fournisseur à facturer ce mois-ci');
       return;
     }
+
+    // Récupérer l'année depuis l'exercice sélectionné
+    const exerciceActif = exercices.find(ex => ex.id === selectedExercice);
+    if (!exerciceActif) {
+      alert('Exercice non trouvé');
+      return;
+    }
+    const annee = exerciceActif.annee;
 
     const nouvellesFactures: FactureGeneree[] = [];
     let numeroFacture = numeroFactureDebut;
