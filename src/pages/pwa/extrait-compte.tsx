@@ -35,6 +35,8 @@ export default function ExtraitComptePWA() {
   const [exercices, setExercices] = useState<any[]>([]);
   const [selectedExerciceId, setSelectedExerciceId] = useState<number | null>(null);
   const [comptes, setComptes] = useState<any[]>([]);
+  const [sortColumn, setSortColumn] = useState<'date' | 'journal' | 'pieceRef' | 'libelle' | 'debit' | 'credit' | 'solde'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     loadData();
@@ -114,6 +116,61 @@ export default function ExtraitComptePWA() {
       maximumFractionDigits: 2
     }).format(montant);
   }
+
+  const handleSort = (column: typeof sortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortedEcritures = () => {
+    const sorted = [...ecritures].sort((a: any, b: any) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortColumn) {
+        case 'date':
+          aValue = a.date;
+          bValue = b.date;
+          break;
+        case 'journal':
+          aValue = a.journal || '';
+          bValue = b.journal || '';
+          break;
+        case 'pieceRef':
+          aValue = a.pieceRef || a.piece_ref || '';
+          bValue = b.pieceRef || b.piece_ref || '';
+          break;
+        case 'libelle':
+          aValue = a.libelle || '';
+          bValue = b.libelle || '';
+          break;
+        case 'debit':
+          aValue = a.debit || 0;
+          bValue = b.debit || 0;
+          break;
+        case 'credit':
+          aValue = a.credit || 0;
+          bValue = b.credit || 0;
+          break;
+        case 'solde':
+          aValue = a.soldeProgressif || 0;
+          bValue = b.soldeProgressif || 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -223,17 +280,87 @@ export default function ExtraitComptePWA() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Date</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Journal</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">N° Pièce</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Libellé</th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">Débit</th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">Crédit</th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">Solde</th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('date')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Date
+                        {sortColumn === 'date' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('journal')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Journal
+                        {sortColumn === 'journal' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('pieceRef')}
+                    >
+                      <div className="flex items-center gap-1">
+                        N° Pièce
+                        {sortColumn === 'pieceRef' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('libelle')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Libellé
+                        {sortColumn === 'libelle' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('debit')}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Débit
+                        {sortColumn === 'debit' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('credit')}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Crédit
+                        {sortColumn === 'credit' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-blue-800"
+                      onClick={() => handleSort('solde')}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Solde
+                        {sortColumn === 'solde' && (
+                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {ecritures.map((ecriture: any, index) => {
+                  {getSortedEcritures().map((ecriture: any, index) => {
                     // Extraire le mois de la date de l'écriture
                     const moisEcriture = ecriture.date ? ecriture.date.substring(0, 7) : '';
                     const journal = ecriture.journal || '';
