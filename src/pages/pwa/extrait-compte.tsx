@@ -37,6 +37,7 @@ export default function ExtraitComptePWA() {
   const [comptes, setComptes] = useState<any[]>([]);
   const [sortColumn, setSortColumn] = useState<'date' | 'journal' | 'pieceRef' | 'libelle' | 'debit' | 'credit' | 'solde'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -127,7 +128,19 @@ export default function ExtraitComptePWA() {
   };
 
   const getSortedEcritures = () => {
-    const sorted = [...ecritures].sort((a: any, b: any) => {
+    // Filtrer par terme de recherche
+    let filtered = ecritures;
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = ecritures.filter((e: any) => {
+        const libelle = (e.libelle || '').toLowerCase();
+        const pieceRef = (e.pieceRef || e.piece_ref || '').toLowerCase();
+        return libelle.includes(term) || pieceRef.includes(term);
+      });
+    }
+
+    // Trier
+    const sorted = [...filtered].sort((a: any, b: any) => {
       let aValue: any;
       let bValue: any;
 
@@ -264,6 +277,34 @@ export default function ExtraitComptePWA() {
               </div>
             </div>
           </div>
+
+          {/* Recherche */}
+          {ecritures.length > 0 && (
+            <div className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="🔍 Rechercher dans les libellés ou numéros de pièce..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-3 pl-10 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              {searchTerm && (
+                <p className="mt-2 text-sm text-gray-600">
+                  {getSortedEcritures().length} résultat(s) trouvé(s) sur {ecritures.length} écriture(s)
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Table */}
           {loading ? (
@@ -414,18 +455,28 @@ export default function ExtraitComptePWA() {
                 <tfoot>
                   <tr className="bg-blue-100 font-bold border-t-2 border-blue-300">
                     <td colSpan={4} className="px-4 py-3 text-sm text-right">
-                      TOTAUX
+                      {searchTerm ? `TOTAUX (${getSortedEcritures().length} écriture(s))` : 'TOTAUX'}
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-mono text-green-700">
-                      {formatMontant(ecritures.reduce((sum, e: any) => sum + (e.debit || 0), 0))} €
+                      {formatMontant(getSortedEcritures().reduce((sum, e: any) => sum + (e.debit || 0), 0))} €
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-mono text-red-700">
-                      {formatMontant(ecritures.reduce((sum, e: any) => sum + (e.credit || 0), 0))} €
+                      {formatMontant(getSortedEcritures().reduce((sum, e: any) => sum + (e.credit || 0), 0))} €
                     </td>
                     <td className={`px-4 py-3 text-sm text-right font-mono font-semibold ${
-                      solde >= 0 ? 'text-green-700' : 'text-red-700'
+                      (() => {
+                        const totalDebit = getSortedEcritures().reduce((sum, e: any) => sum + (e.debit || 0), 0);
+                        const totalCredit = getSortedEcritures().reduce((sum, e: any) => sum + (e.credit || 0), 0);
+                        const soldeFiltré = totalDebit - totalCredit;
+                        return soldeFiltré >= 0 ? 'text-green-700' : 'text-red-700';
+                      })()
                     }`}>
-                      {formatMontant(Math.abs(solde))} {solde >= 0 ? 'D' : 'C'}
+                      {(() => {
+                        const totalDebit = getSortedEcritures().reduce((sum, e: any) => sum + (e.debit || 0), 0);
+                        const totalCredit = getSortedEcritures().reduce((sum, e: any) => sum + (e.credit || 0), 0);
+                        const soldeFiltré = totalDebit - totalCredit;
+                        return `${formatMontant(Math.abs(soldeFiltré))} ${soldeFiltré >= 0 ? 'D' : 'C'}`;
+                      })()}
                     </td>
                   </tr>
                 </tfoot>
