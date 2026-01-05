@@ -412,7 +412,7 @@ export default function GenerationFacturesAutoPWA() {
           {/* Configuration */}
           <div className="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-3">Période et configuration</h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Type
@@ -457,30 +457,20 @@ export default function GenerationFacturesAutoPWA() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Année
-                </label>
-                <input
-                  type="number"
-                  value={annee}
-                  onChange={(e) => setAnnee(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {typeJournal === 'VE' ? 'N° facture début' : 'N° pièce'}
-                </label>
-                <input
-                  type={typeJournal === 'VE' ? 'number' : 'text'}
-                  value={typeJournal === 'VE' ? numeroFactureDebut : 'Nom fournisseur'}
-                  onChange={(e) => typeJournal === 'VE' && setNumeroFactureDebut(Number(e.target.value))}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${typeJournal === 'VE' ? 'focus:ring-2 focus:ring-purple-500' : 'bg-gray-100'}`}
-                  min={typeJournal === 'VE' ? '1' : undefined}
-                  disabled={typeJournal === 'HA'}
-                />
-              </div>
+              {typeJournal === 'VE' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    N° facture début
+                  </label>
+                  <input
+                    type="number"
+                    value={numeroFactureDebut}
+                    onChange={(e) => setNumeroFactureDebut(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    min="1"
+                  />
+                </div>
+              )}
             </div>
             <div className="mt-3 text-sm text-purple-700 bg-purple-100 rounded p-3">
               {typeJournal === 'VE'
