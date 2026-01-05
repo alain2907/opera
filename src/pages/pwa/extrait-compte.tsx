@@ -411,6 +411,24 @@ export default function ExtraitComptePWA() {
                     );
                   })}
                 </tbody>
+                <tfoot>
+                  <tr className="bg-blue-100 font-bold border-t-2 border-blue-300">
+                    <td colSpan={4} className="px-4 py-3 text-sm text-right">
+                      TOTAUX
+                    </td>
+                    <td className="px-4 py-3 text-sm text-right font-mono text-green-700">
+                      {formatMontant(ecritures.reduce((sum, e: any) => sum + (e.debit || 0), 0))} €
+                    </td>
+                    <td className="px-4 py-3 text-sm text-right font-mono text-red-700">
+                      {formatMontant(ecritures.reduce((sum, e: any) => sum + (e.credit || 0), 0))} €
+                    </td>
+                    <td className={`px-4 py-3 text-sm text-right font-mono font-semibold ${
+                      solde >= 0 ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {formatMontant(Math.abs(solde))} {solde >= 0 ? 'D' : 'C'}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}
