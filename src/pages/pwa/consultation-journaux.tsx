@@ -68,6 +68,13 @@ export default function JournauxPWA() {
   const initialLoadRef = useRef(true);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedEcriture, setEditedEcriture] = useState<any>(null);
+  const [ajoutLigneNumeroEcriture, setAjoutLigneNumeroEcriture] = useState<string | null>(null);
+  const [nouvelleLigne, setNouvelleLigne] = useState<any>({
+    compteNumero: '',
+    libelle: '',
+    debit: '',
+    credit: ''
+  });
 
   useEffect(() => {
     loadInitialData();
@@ -344,6 +351,102 @@ export default function JournauxPWA() {
       console.error('Erreur sauvegarde:', error);
       alert('Erreur lors de la sauvegarde');
     }
+  };
+
+  const handleAjouterLigneClick = (ecriture: any) => {
+    setAjoutLigneNumeroEcriture(ecriture.numeroEcriture || null);
+    setNouvelleLigne({
+      compteNumero: '',
+      libelle: ecriture.libelle || '',
+      debit: '',
+      credit: ''
+    });
+  };
+
+  const handleSaveNouvelleLigne = async () => {
+    if (!ajoutLigneNumeroEcriture) return;
+    if (!nouvelleLigne.compteNumero) {
+      alert('⚠️ Veuillez sélectionner un compte');
+      return;
+    }
+    if (!nouvelleLigne.debit && !nouvelleLigne.credit) {
+      alert('⚠️ Veuillez saisir un montant (débit ou crédit)');
+      return;
+    }
+
+    try {
+      const { createEcriture, getCompte, createCompte } = await import('../../lib/storageAdapter');
+
+      // Vérifier si le compte existe, sinon le créer
+      const compteNumero = nouvelleLigne.compteNumero;
+      if (compteNumero) {
+        const compteExistant = await getCompte(compteNumero);
+        if (!compteExistant) {
+          let type = 'general';
+          if (compteNumero.startsWith('1')) type = 'capitaux';
+          else if (compteNumero.startsWith('2')) type = 'immobilisation';
+          else if (compteNumero.startsWith('3')) type = 'stock';
+          else if (compteNumero.startsWith('4')) type = 'tiers';
+          else if (compteNumero.startsWith('5')) type = 'financier';
+          else if (compteNumero.startsWith('6')) type = 'charge';
+          else if (compteNumero.startsWith('7')) type = 'produit';
+          else if (compteNumero.startsWith('8')) type = 'special';
+
+          await createCompte({
+            numero: compteNumero,
+            nom: `Compte ${compteNumero}`,
+            type: type,
+          });
+        }
+      }
+
+      // Trouver l'écriture de référence pour récupérer les infos
+      const ecritureRef = ecritures.find((e: any) => e.numeroEcriture === ajoutLigneNumeroEcriture);
+      if (!ecritureRef) {
+        alert('❌ Écriture de référence introuvable');
+        return;
+      }
+
+      // Créer la nouvelle ligne
+      await createEcriture({
+        exerciceId: ecritureRef.exerciceId || ecritureRef.exercice_id,
+        date: ecritureRef.date,
+        journal: ecritureRef.journal,
+        pieceRef: ecritureRef.pieceRef || ecritureRef.piece_ref,
+        numeroEcriture: ajoutLigneNumeroEcriture,
+        libelle: nouvelleLigne.libelle,
+        compteNumero: nouvelleLigne.compteNumero,
+        debit: nouvelleLigne.debit ? parseFloat(nouvelleLigne.debit) : undefined,
+        credit: nouvelleLigne.credit ? parseFloat(nouvelleLigne.credit) : undefined,
+      });
+
+      // Recharger les écritures
+      await loadEcritures();
+
+      // Réinitialiser
+      setAjoutLigneNumeroEcriture(null);
+      setNouvelleLigne({
+        compteNumero: '',
+        libelle: '',
+        debit: '',
+        credit: ''
+      });
+
+      alert('✅ Ligne ajoutée avec succès');
+    } catch (error) {
+      console.error('Erreur ajout ligne:', error);
+      alert('❌ Erreur lors de l\'ajout de la ligne');
+    }
+  };
+
+  const handleCancelAjoutLigne = () => {
+    setAjoutLigneNumeroEcriture(null);
+    setNouvelleLigne({
+      compteNumero: '',
+      libelle: '',
+      debit: '',
+      credit: ''
+    });
   };
 
   const handleDeleteEcriture = async (ecriture: any) => {
@@ -734,6 +837,15 @@ export default function JournauxPWA() {
                             >
                               ✎
                             </button>
+                            {ecriture.numeroEcriture && (
+                              <button
+                                onClick={() => handleAjouterLigneClick(ecriture)}
+                                className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
+                                title="Ajouter une ligne à cette écriture"
+                              >
+                                +
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDeleteEcriture(ecriture)}
                               className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
@@ -745,6 +857,69 @@ export default function JournauxPWA() {
                         )}
                       </td>
                     </tr>
+
+                    {/* Ligne d'ajout si on est en mode ajout pour cette écriture */}
+                    {ajoutLigneNumeroEcriture === ecriture.numeroEcriture && (
+                      <tr className="bg-purple-50 border-2 border-purple-400">
+                        <td className="px-4 py-3 text-sm text-gray-500">-</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">-</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">-</td>
+                        <td className="px-4 py-3 text-sm">
+                          <input
+                            type="text"
+                            value={nouvelleLigne.compteNumero}
+                            onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, compteNumero: e.target.value })}
+                            className="w-full px-2 py-1 border rounded"
+                            placeholder="Compte"
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <input
+                            type="text"
+                            value={nouvelleLigne.libelle}
+                            onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, libelle: e.target.value })}
+                            className="w-full px-2 py-1 border rounded"
+                            placeholder="Libellé"
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={nouvelleLigne.debit}
+                            onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, debit: e.target.value })}
+                            className="w-full px-2 py-1 border rounded text-right"
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={nouvelleLigne.credit}
+                            onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, credit: e.target.value })}
+                            className="w-full px-2 py-1 border rounded text-right"
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={handleSaveNouvelleLigne}
+                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={handleCancelAjoutLigne}
+                              className="px-2 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-700"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     );
                   })}
                 </tbody>
