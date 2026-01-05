@@ -740,8 +740,8 @@ export default function JournauxPWA() {
                     const displayData = isEditing ? editedEcriture : ecriture;
 
                     return (
+                    <React.Fragment key={ecriture.id || index}>
                     <tr
-                      key={ecriture.id || index}
                       className={`hover:bg-blue-50 transition-colors ${!isEditing ? 'cursor-pointer' : ''}`}
                     >
                       <td className="px-4 py-3 text-sm font-mono text-blue-600">
@@ -919,6 +919,7 @@ export default function JournauxPWA() {
                         </td>
                       </tr>
                     )}
+                    </React.Fragment>
                     );
                   })}
                 </tbody>
