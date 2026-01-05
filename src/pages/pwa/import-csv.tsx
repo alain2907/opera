@@ -37,6 +37,8 @@ export default function ImportCSVPWA() {
   const [importing, setImporting] = useState(false);
   const [libelleCompteMap, setLibelleCompteMap] = useState<{ [key: string]: string }>({});
   const [modeContrepartie, setModeContrepartie] = useState<'mensuel' | 'ligne'>('mensuel');
+  const [entrepriseValidated, setEntrepriseValidated] = useState(false);
+  const [exerciceValidated, setExerciceValidated] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -481,104 +483,176 @@ export default function ImportCSVPWA() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">1. Sélection</h2>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Entreprise
-                </label>
-                <select
-                  value={selectedEntreprise || ''}
-                  onChange={(e) => setSelectedEntreprise(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  {entreprises.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.raison_sociale || e.nom}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Exercice
-                </label>
-                <select
-                  value={selectedExercice || ''}
-                  onChange={(e) => setSelectedExercice(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  {exercices.map((ex) => (
-                    <option key={ex.id} value={ex.id}>
-                      {ex.annee}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mode de contrepartie
-                </label>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <button
-                    onClick={() => setModeContrepartie('mensuel')}
-                    className={`p-4 border-2 rounded-lg transition-all ${
-                      modeContrepartie === 'mensuel'
-                        ? 'border-blue-600 bg-blue-50 shadow-md'
-                        : 'border-gray-300 hover:border-blue-400'
-                    }`}
+            <div className="space-y-6">
+              {/* Étape 1: Entreprise */}
+              <div className={`border-2 rounded-lg p-6 ${entrepriseValidated ? 'border-green-500 bg-green-50' : 'border-blue-500 bg-blue-50'}`}>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">
+                  {entrepriseValidated ? '✅ Étape 1: Entreprise validée' : '1️⃣ Étape 1: Sélection de l\'entreprise'}
+                </h3>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Entreprise
+                  </label>
+                  <select
+                    value={selectedEntreprise || ''}
+                    onChange={(e) => {
+                      setSelectedEntreprise(Number(e.target.value));
+                      setEntrepriseValidated(false);
+                      setExerciceValidated(false);
+                      setSelectedExercice(null);
+                    }}
+                    disabled={entrepriseValidated}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    <div className="font-bold">Mensuel</div>
-                    <div className="text-sm text-gray-600">Une ligne par mois</div>
-                  </button>
-                  <button
-                    onClick={() => setModeContrepartie('ligne')}
-                    className={`p-4 border-2 rounded-lg transition-all ${
-                      modeContrepartie === 'ligne'
-                        ? 'border-blue-600 bg-blue-50 shadow-md'
-                        : 'border-gray-300 hover:border-blue-400'
-                    }`}
-                  >
-                    <div className="font-bold">Par ligne</div>
-                    <div className="text-sm text-gray-600">Une contrepartie par ligne</div>
-                  </button>
+                    {entreprises.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.raison_sociale || e.nom}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+                {!entrepriseValidated ? (
+                  <button
+                    onClick={() => setEntrepriseValidated(true)}
+                    disabled={!selectedEntreprise}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+                  >
+                    ✓ Valider l'entreprise
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEntrepriseValidated(false);
+                      setExerciceValidated(false);
+                    }}
+                    className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold"
+                  >
+                    ✎ Modifier l'entreprise
+                  </button>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Compte de contrepartie (banque)
-                </label>
-                <input
-                  type="text"
-                  value={compteContrepartie}
-                  onChange={(e) => setCompteContrepartie(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="512000"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {modeContrepartie === 'mensuel'
-                    ? 'Une écriture de contrepartie sera créée le dernier jour de chaque mois'
-                    : 'Une ligne de contrepartie sera créée pour chaque ligne CSV'
-                  }
-                </p>
-              </div>
+              {/* Étape 2: Exercice */}
+              {entrepriseValidated && (
+                <div className={`border-2 rounded-lg p-6 ${exerciceValidated ? 'border-green-500 bg-green-50' : 'border-blue-500 bg-blue-50'}`}>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">
+                    {exerciceValidated ? '✅ Étape 2: Exercice validé' : '2️⃣ Étape 2: Sélection de l\'exercice'}
+                  </h3>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Exercice
+                    </label>
+                    <select
+                      value={selectedExercice || ''}
+                      onChange={(e) => {
+                        setSelectedExercice(Number(e.target.value));
+                        setExerciceValidated(false);
+                      }}
+                      disabled={exerciceValidated}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      {exercices.map((ex) => (
+                        <option key={ex.id} value={ex.id}>
+                          {ex.annee}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {!exerciceValidated ? (
+                    <button
+                      onClick={() => setExerciceValidated(true)}
+                      disabled={!selectedExercice}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+                    >
+                      ✓ Valider l'exercice
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setExerciceValidated(false)}
+                      className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold"
+                    >
+                      ✎ Modifier l'exercice
+                    </button>
+                  )}
+                </div>
+              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fichier CSV
-                </label>
-                <p className="text-sm text-gray-500 mb-2">
-                  Format : date;libellé;montant (date : DD-MM-YYYY, montant : avec virgule)
-                </p>
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileSelect}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
+              {/* Étape 3: Configuration et fichier (seulement si entreprise et exercice validés) */}
+              {exerciceValidated && (
+                <>
+                  <div className="border-2 border-purple-500 bg-purple-50 rounded-lg p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">
+                      3️⃣ Étape 3: Configuration de l'import
+                    </h3>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Mode de contrepartie
+                        </label>
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <button
+                            onClick={() => setModeContrepartie('mensuel')}
+                            className={`p-4 border-2 rounded-lg transition-all ${
+                              modeContrepartie === 'mensuel'
+                                ? 'border-blue-600 bg-blue-50 shadow-md'
+                                : 'border-gray-300 hover:border-blue-400'
+                            }`}
+                          >
+                            <div className="font-bold">Mensuel</div>
+                            <div className="text-sm text-gray-600">Une ligne par mois</div>
+                          </button>
+                          <button
+                            onClick={() => setModeContrepartie('ligne')}
+                            className={`p-4 border-2 rounded-lg transition-all ${
+                              modeContrepartie === 'ligne'
+                                ? 'border-blue-600 bg-blue-50 shadow-md'
+                                : 'border-gray-300 hover:border-blue-400'
+                            }`}
+                          >
+                            <div className="font-bold">Par ligne</div>
+                            <div className="text-sm text-gray-600">Une contrepartie par ligne</div>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Compte de contrepartie (banque)
+                        </label>
+                        <input
+                          type="text"
+                          value={compteContrepartie}
+                          onChange={(e) => setCompteContrepartie(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="512000"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          {modeContrepartie === 'mensuel'
+                            ? 'Une écriture de contrepartie sera créée le dernier jour de chaque mois'
+                            : 'Une ligne de contrepartie sera créée pour chaque ligne CSV'
+                          }
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Fichier CSV
+                        </label>
+                        <p className="text-sm text-gray-500 mb-2">
+                          Format : date;libellé;montant (date : DD-MM-YYYY, montant : avec virgule)
+                        </p>
+                        <input
+                          type="file"
+                          accept=".csv"
+                          onChange={handleFileSelect}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
