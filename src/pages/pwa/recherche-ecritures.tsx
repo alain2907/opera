@@ -25,9 +25,6 @@ export default function RechercheEcrituresPWA() {
   const [sortColumn, setSortColumn] = useState<'date' | 'journal' | 'compte' | 'pieceRef' | 'libelle' | 'debit' | 'credit'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  const [ecritureDetaillee, setEcritureDetaillee] = useState<any>(null);
-  const [toutesLignesEcriture, setToutesLignesEcriture] = useState<any[]>([]);
-
   useEffect(() => {
     loadData();
   }, []);
@@ -211,47 +208,19 @@ export default function RechercheEcrituresPWA() {
     return compte?.nom || compte?.libelle || '';
   };
 
-  const chargerDetailEcriture = async (ecriture: any) => {
-    try {
-      const pieceRef = ecriture.pieceRef || ecriture.piece_ref;
-      const numeroEcriture = ecriture.numeroEcriture;
+  const ouvrirJournalEcriture = (ecriture: any) => {
+    // Extraire le mois de la date de l'écriture
+    const moisEcriture = ecriture.date ? ecriture.date.substring(0, 7) : '';
+    const journal = ecriture.journal || '';
 
-      let lignesEcriture: any[];
-
-      if (numeroEcriture) {
-        // Filtrer par numeroEcriture
-        lignesEcriture = ecritures.filter((e: any) => e.numeroEcriture === numeroEcriture);
-      } else if (pieceRef) {
-        // Filtrage intelligent : relevés mensuels SANS date, autres AVEC date
-        const isReleveMensuel = /^(Relevé|banque|BANQUE)/i.test(pieceRef);
-        const principalJournal = ecriture.journal || '';
-
-        lignesEcriture = ecritures.filter((e: any) => {
-          const ref = e.pieceRef || e.piece_ref;
-          const eJournal = e.journal || '';
-          const eDate = e.date;
-
-          if (isReleveMensuel) {
-            // Relevé mensuel : même pieceRef + même journal (SANS date)
-            return ref === pieceRef && eJournal === principalJournal;
-          } else {
-            // Écriture normale : même pieceRef + même date + même journal
-            return ref === pieceRef && eDate === ecriture.date && eJournal === principalJournal;
-          }
-        });
-      } else {
-        // Fallback: juste cette ligne
-        lignesEcriture = [ecriture];
-      }
-
-      // Trier par ordre d'insertion (id)
-      lignesEcriture.sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
-
-      setEcritureDetaillee(ecriture);
-      setToutesLignesEcriture(lignesEcriture);
-    } catch (err) {
-      console.error('Erreur chargement détail écriture:', err);
-    }
+    // Rediriger vers consultation-journaux avec les filtres appropriés
+    const params = new URLSearchParams({
+      journal,
+      month: moisEcriture,
+      exercice: String(selectedExercice || ''),
+      entreprise: String(selectedEntreprise || ''),
+    });
+    router.push(`/pwa/consultation-journaux?${params.toString()}`);
   };
 
   const entrepriseActive = entreprises.find(e => e.id === selectedEntreprise);
@@ -461,8 +430,8 @@ export default function RechercheEcrituresPWA() {
                     <tr
                       key={ecriture.id || index}
                       className="hover:bg-green-50 transition-colors cursor-pointer"
-                      onClick={() => chargerDetailEcriture(ecriture)}
-                      title="Cliquer pour voir le détail de l'écriture complète"
+                      onClick={() => ouvrirJournalEcriture(ecriture)}
+                      title="Cliquer pour ouvrir le journal de cette écriture"
                     >
                       <td className="px-4 py-3 text-sm">
                         {formatDate(ecriture.date)}
@@ -519,92 +488,6 @@ export default function RechercheEcrituresPWA() {
           )}
         </div>
       </div>
-
-      {/* Modal Détail Écriture */}
-      {ecritureDetaillee && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
-          onClick={() => setEcritureDetaillee(null)}
-        >
-          <div
-            className="bg-white rounded-lg shadow-2xl max-w-5xl w-full max-h-[85vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="bg-green-600 text-white p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    📝 Détail de l'écriture
-                  </h2>
-                  <p className="text-sm text-green-100">
-                    Date: {formatDate(ecritureDetaillee.date)} |
-                    Journal: {ecritureDetaillee.journal} |
-                    N° Pièce: {ecritureDetaillee.pieceRef || ecritureDetaillee.piece_ref || 'N/A'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setEcritureDetaillee(null)}
-                  className="text-white hover:text-gray-200 text-2xl font-bold"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-
-            {/* Table toutes les lignes */}
-            <div className="p-6 overflow-auto max-h-[calc(85vh-180px)]">
-              <table className="w-full">
-                <thead className="bg-gray-100 sticky top-0">
-                  <tr>
-                    <th className="text-left p-3 font-semibold text-sm">Compte</th>
-                    <th className="text-left p-3 font-semibold text-sm">Nom du compte</th>
-                    <th className="text-left p-3 font-semibold text-sm">Libellé</th>
-                    <th className="text-right p-3 font-semibold text-sm">Débit</th>
-                    <th className="text-right p-3 font-semibold text-sm">Crédit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {toutesLignesEcriture.map((ligne, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="p-3 text-sm font-mono font-semibold">
-                        {ligne.compteNumero || ligne.compte_numero}
-                      </td>
-                      <td className="p-3 text-sm text-gray-600">
-                        {getCompteNom(ligne.compteNumero || ligne.compte_numero)}
-                      </td>
-                      <td className="p-3 text-sm">{ligne.libelle || '-'}</td>
-                      <td className="p-3 text-sm text-right font-mono">
-                        {ligne.debit ? `${formatMontant(ligne.debit)} €` : '-'}
-                      </td>
-                      <td className="p-3 text-sm text-right font-mono">
-                        {ligne.credit ? `${formatMontant(ligne.credit)} €` : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-100 font-bold sticky bottom-0">
-                  <tr>
-                    <td colSpan={3} className="p-3 text-right">TOTAL</td>
-                    <td className="p-3 text-right font-mono">
-                      {formatMontant(toutesLignesEcriture.reduce((sum, l) => sum + (l.debit || 0), 0))} €
-                    </td>
-                    <td className="p-3 text-right font-mono">
-                      {formatMontant(toutesLignesEcriture.reduce((sum, l) => sum + (l.credit || 0), 0))} €
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-
-              {toutesLignesEcriture.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Aucune ligne trouvée</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
